@@ -18,13 +18,13 @@
          (l-min (- l-max))
          (command-list `(moveto ,lgth 0                    ; Start at bottom-right corner
                          lineto ,lgth ,(- r-max top-offset) ; Go up to top-right corner (inset down)
-                         lineto ,(- lgth side-offset) ,r-max ; Go up to top-right corner (inset left)
+                         curveto ,lgth ,r-max ,(- lgth side-offset) ,r-max ,(- lgth side-offset) ,r-max ; Curve to top-right corner
                          lineto ,(+ (- lgth) side-offset) ,r-max ; Go left to top-left corner (inset right)
-                         lineto ,(- lgth) ,(- r-max top-offset) ; Go left to top-left corner (inset down)
-                         lineto ,(- lgth) ,(+ r-min top-offset) ; Go right to bottom-left corner (inset up)
-                         lineto ,(+ (- lgth) side-offset) ,r-min ; Go right to bottom-left corner (inset right)
+                         curveto ,(- lgth) ,r-max ,(- lgth) ,(- r-max top-offset) ,(- lgth) ,(- r-max top-offset) ; Curve to top-left corner
+                         lineto ,(- lgth) ,(+ r-min top-offset) ; Go down to bottom-left corner (inset up)
+                         curveto ,(- lgth) ,r-min ,(+ (- lgth) side-offset) ,r-min ,(+ (- lgth) side-offset) ,r-min ; Curve to bottom-left corner
                          lineto ,(- lgth side-offset) ,r-min ; Go right to bottom-right corner (inset left)
-                         lineto ,lgth ,(+ r-min top-offset) ; Go right to bottom-right corner (inset down)
+                         curveto ,lgth ,r-min ,lgth ,(+ r-min top-offset) ,lgth ,(+ r-min top-offset) ; Curve to bottom-right corner
                          lineto ,lgth 0                     ; Go up back to start
                          closepath)))                       ; Close the rectangle
       ;; after Harm:
