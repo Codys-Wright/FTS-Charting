@@ -16,16 +16,17 @@
          (r-min (- r-max))
          (l-max (- lgth r-max)) 
          (l-min (- l-max))
-         (commands `(,(list 'moveto lgth 0)                    ; Start at bottom-right corner
-                     ,(list 'lineto lgth (- r-max top-offset)) ; Go up to top-right corner (inset down)
-                     ,(list 'lineto (- lgth side-offset) r-max) ; Go up to top-right corner (inset left)
-                     ,(list 'lineto (- lgth) r-max)            ; Go left to top-left corner
-                     ,(list 'lineto (- lgth) r-min)            ; Go down to bottom-left corner
-                     ,(list 'lineto (- lgth side-offset) r-min) ; Go right to bottom-right corner (inset left)
-                     ,(list 'lineto lgth (+ r-min top-offset)) ; Go right to bottom-right corner (inset down)
-                     ,(list 'lineto lgth 0)                    ; Go up back to start
-                     ,(list 'closepath)))                      ; Close the rectangle
-         (command-list (fold-right append '() commands)))
+         (command-list `(moveto ,lgth 0                    ; Start at bottom-right corner
+                         lineto ,lgth ,(- r-max top-offset) ; Go up to top-right corner (inset down)
+                         lineto ,(- lgth side-offset) ,r-max ; Go up to top-right corner (inset left)
+                         lineto ,(+ (- lgth) side-offset) ,r-max ; Go left to top-left corner (inset right)
+                         lineto ,(- lgth) ,(- r-max top-offset) ; Go left to top-left corner (inset down)
+                         lineto ,(- lgth) ,(+ r-min top-offset) ; Go right to bottom-left corner (inset up)
+                         lineto ,(+ (- lgth) side-offset) ,r-min ; Go right to bottom-left corner (inset right)
+                         lineto ,(- lgth side-offset) ,r-min ; Go right to bottom-right corner (inset left)
+                         lineto ,lgth ,(+ r-min top-offset) ; Go right to bottom-right corner (inset down)
+                         lineto ,lgth 0                     ; Go up back to start
+                         closepath)))                       ; Close the rectangle
       ;; after Harm:
       (make-path-stencil
        command-list
