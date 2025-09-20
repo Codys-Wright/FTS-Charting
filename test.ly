@@ -1,206 +1,160 @@
-\version "2.24.0"
-\include "english.ly"
+\paper { tagline = ##f }
 
-#(set-global-staff-size 18)
+%% http://lsr.di.unimi.it/LSR/Item?id=1092
+%% Add by P.P.Schneider on Apr. 2019.
 
-% Add fonts from local directories
-#(ly:font-config-add-directory "fonts/San-Francisco-Pro-Fonts-master/")
-#(ly:font-config-add-directory "fonts/musescore/fonts/leeland/")
-#(ly:font-config-add-directory "fonts/musescore/fonts/musejazz/")
+%%%% Defs:
+#(define-public (make-capsule-stencil lgth radius thickness fill)
+  "Make an capsule from four Bézier curves and two lines, of radius @var{radius},
+   length @var{lgth}, and thickness @var{thickness} with fill
+   defined by @code{fill}."
+    (let*
+        ((k 0)
+         (top-offset 2)
+         (side-offset 2)
+         (r-max radius)
+         (r-min (- r-max))
+         (l-max (- lgth r-max)) 
+         (l-min (- l-max))
+         (commands `(,(list 'moveto lgth 0)                    ; Start at bottom-right corner
+                     ,(list 'lineto lgth (- r-max top-offset)) ; Go up to top-right corner (inset down)
+                     ,(list 'lineto (- lgth side-offset) r-max) ; Go up to top-right corner (inset left)
+                     ,(list 'lineto (- lgth) r-max)            ; Go left to top-left corner
+                     ,(list 'lineto (- lgth) r-min)            ; Go down to bottom-left corner
+                     ,(list 'lineto (- lgth side-offset) r-min) ; Go right to bottom-right corner (inset left)
+                     ,(list 'lineto lgth (+ r-min top-offset)) ; Go right to bottom-right corner (inset down)
+                     ,(list 'lineto lgth 0)                    ; Go up back to start
+                     ,(list 'closepath)))                      ; Close the rectangle
+         (command-list (fold-right append '() commands)))
+      ;; after Harm:
+      (make-path-stencil
+       command-list
+       thickness 1 1 fill)))
 
-\paper {
-  #(set-paper-size "a4")
-  top-margin = 12\mm
-  bottom-margin = 12\mm
-  left-margin = 16\mm
-  right-margin = 16\mm
-  indent = 5.00
-  system-system-spacing = #'(
-    (basic-distance . 16)
-    (minimum-distance . 12)
-    (padding . 6)
-    (stretchability . 20))
-  ragged-last-bottom = ##f
+#(define-public (capsule-stencil stencil thickness x-padding y-padding)
+  "Add a capsule around @code{stencil}, padded by the padding pair,
+   producing a var stencil."
+  (let* ((x-ext (ly:stencil-extent stencil X))
+         (y-ext (ly:stencil-extent stencil Y))
+         (x-length (+ (interval-length x-ext) x-padding thickness))
+         (y-length (+ (interval-length y-ext) y-padding thickness))
+         (x-radius (* 0.5 x-length) )
+         (y-radius (* 0.52 y-length) )
+         (capsule (make-capsule-stencil x-radius y-radius thickness #f)))
+    (ly:stencil-add
+     stencil
+     (ly:stencil-translate capsule
+                           (cons
+                            (interval-center x-ext)
+                            (interval-center y-ext))))))
+
+#(define-markup-command (capsule layout props arg)
+  (markup?)
+  #:category graphic
+  #:properties ((thickness 1)
+                (font-size 0)
+                (x-padding 1)
+                (y-padding .4))
+"
+@cindex drawing capsule around text
+
+Draw a capsule around @var{arg}. Use @code{thickness},
+@code{x-padding}, @code{x-padding} and @code{font-size} properties to determine
+line thickness and padding around the markup.
+
+@lilypond[verbatim,quote]
+\\markup {
+  \\capsule {
+    Hi
+  }
+}
+@end lilypond"
+
+  (let ((th (* (ly:output-def-lookup layout 'line-thickness)
+               thickness))
+        (pad-x (* (magstep font-size) x-padding))
+        (pad-y (* (magstep font-size) y-padding))
+        (m (interpret-markup layout props arg)))
+    (capsule-stencil m th pad-x pad-y)))
+
+%%%% Defs end %%%%%%%%%%
+
+
+%%%% Tests:
+\markup { \italic "Default:" \capsule "Hi" }
+\markuplist {
+  \vspace #1 \italic "With some overrides:" \vspace #.5
+  \override #'(font-size . 3)
+  \override #'(y-padding . 2)
+  \override #'(x-padding . 2)
+  \override #'(thickness . 5)
+  \with-color #(rgb-color 1 0.3 0.2) 
+  \capsule "This is an encapsulated text"
   
-  % Disable default headers and page numbers
-  print-page-number = ##f
-  print-first-page-number = ##f
-  bookTitleMarkup = ##f
+  \vspace #2 \italic "More experiments:" \vspace #.5
   
-  % Custom title layout with part type in top left
-  scoreTitleMarkup = \markup \fill-line {
-    \column {
-      \line { \fontsize #1 \override #'(font-family . "SF Pro Display Bold") "MASTER" }
-      \line { \fontsize #1 \override #'(font-family . "SF Pro Display Bold") "RHYTHM" }
-      \line { \fontsize #0.5 \with-color #grey \override #'(font-family . "SF Pro Text") "V1" }
-    }
-    \center-column {
-      \fontsize #10 \override #'(font-family . "SF Pro Display Bold") \fromproperty #'header:title
-      \fontsize #-4 \line { \override #'(font-family . "SF Pro Display Thin Italic") "Transcribed by: " \override #'(font-family . "SF Pro Display Medium") \fromproperty #'header:subtitle }
-    }
-    \column {
-      \line { \fontsize #-1 \override #'(font-family . "SF Pro Text") \fromproperty #'header:composer }
-      \line { \fontsize #-1 \override #'(font-family . "SF Pro Text") \fromproperty #'header:arranger }
+  % Different colors and sizes
+  \override #'(font-size . 2)
+  \override #'(thickness . 3)
+  \with-color #(rgb-color 0.2 0.8 0.4)
+  \capsule "Green capsule"
+  
+  \vspace #1
+  \override #'(font-size . 1)
+  \override #'(thickness . 2)
+  \with-color #(rgb-color 0.1 0.3 0.9)
+  \capsule "Blue capsule"
+  
+  \vspace #1
+  % Very thin with lots of padding
+  \override #'(font-size . 4)
+  \override #'(y-padding . 3)
+  \override #'(x-padding . 4)
+  \override #'(thickness . 1)
+  \with-color #(rgb-color 0.8 0.2 0.8)
+  \capsule "Purple with lots of padding"
+  
+  \vspace #1
+  % Thick border, minimal padding
+  \override #'(font-size . 2)
+  \override #'(y-padding . 0.2)
+  \override #'(x-padding . 0.5)
+  \override #'(thickness . 8)
+  \with-color #(rgb-color 0.9 0.6 0.1)
+  \capsule "Thick orange border"
+  
+  \vspace #2 \italic "Two-line text:" \vspace #.5
+  
+  % Two-line capsule
+  \override #'(font-size . 2)
+  \override #'(y-padding . 2.5)
+  \override #'(x-padding . 3)
+  \override #'(thickness . 3)
+  \with-color #(rgb-color 0.2 0.4 0.8)
+  \translate #'(15 . 0) \capsule \column { \center-align "SOLOISTIC" \center-align "GTR" }
+  
+  \vspace #3 \italic "Capsule next to staff:" \vspace #.5
+  
+  % Staff with capsule to the left
+  \left-align \overlay {
+    % Capsule positioned to the left
+    \translate #'(-8 . 0) 
+    \override #'(y-padding . 3)
+    \override #'(x-padding . 4)
+    \override #'(thickness . 2)
+    \capsule \column { \center-align "SOLO" \center-align "GTR" }
+    
+    % Staff positioned to the right
+    \translate #'(2 . 0) \score {
+      {
+        \time 4/4
+        \clef treble
+        c'4 d' e' f' | g'4 a' b' c'' |
+      }
+      \layout {
+        indent = 0
+        line-width = 60
+      }
     }
   }
-  
-  % Use mixed fonts
-  % Default Emmentaler for music notation, MuseJazz Text for chords and text, SF Pro Display for titles and fitBoxes
-  #(define fonts
-    (make-pango-font-tree "Leland"
-                          "MuseJazz Text"
-                          "MuseJazz Text"
-                          (/ staff-height pt 20)))
-  
-}
-
-\layout {
-  % Use default indentation for rehearsal marks
-  \context {
-    \Staff
-    \override InstrumentName.self-alignment-X = #LEFT
-    \override StaffSymbol.line-count = #5
-    \override StaffSymbol.thickness = #0.05
-    \override TimeSignature.style = #'numbered
-  }
-  \context {
-    \ChordNames
-    \override ChordName.font-size = #5
-    \override ChordName.Y-offset = #3
-  }
-}
-
-\header {
-  title = "Song Title"
-  subtitle = "Cody Wright"
-  composer = "Artist Name #1"
-  arranger = "Composer Name #2"
-  tagline = ""
-}
-
-% Custom part type markup
-#(define (part-type-markup)
-  (markup
-    #:column
-    (#:line (#:bold "MASTER")
-     #:line (#:bold "RHYTHM")
-     #:line (#:with-color "gray" #:fontsize -2 "V1"))))
-
-% ==== Music ====
-global = { \time 4/4 \key g \major }
-
-oneLineChords = \chordmode { g1 c1 e1:m d1 }
-oneLineSlashes = {
-  \override NoteHead.style = #'slash
-  \hide Stem
-  b'4 b'4 b'4 b'4 |
-  b'4 b'4 b'4 b'4 |
-  b'4 b'4 b'4 b'4 |
-  b'4 b'4 b'4 b'4
-}
-
-% Auto-fitting functionality integrated into fitBox command
-
-% Enhanced fitBox command with auto-fitting and manual word wrapping
-#(define-markup-command (fitBox layout props content) (markup?)
-  "Auto-fitting fitBox markup command with manual word wrapping"
-  (let* ((target-width 20)  ; Target width slightly larger than left margin
-         (text (if (string? content) content (format #f "~a" content)))
-         (text-length (string-length text))
-         (scale-factor (cond
-                        ((> text-length 8) 0.7)    ; Very long text - scale down more
-                        ((> text-length 6) 0.7)    ; Long text - scale down moderately
-                        ((> text-length 4) 0.7)    ; Medium text - scale down slightly
-                        (else 1.0))))              ; Short text - no scaling
-    (ly:message "AUTO-FIT: Text: ~s, Length: ~a, Scale: ~a" text text-length scale-factor)
-    (interpret-markup layout props
-      (markup #:with-color "red" #:box #:bold #:fontsize 3 #:pad-around 0.5 #:scale (cons scale-factor scale-factor) #:override #'(font-family . "SF Pro Display") content))))
-
-#(define-markup-command (fitBoxNoScale layout props content) (markup?)
-  "Auto-fitting fitBox markup command with no scaling"
-  (let* ((target-width 20)  ; Target width slightly larger than left margin
-         (text (if (string? content) content (format #f "~a" content)))
-         (text-length (string-length text))
-         (scale-factor 1.0))  ; No scaling
-    (ly:message "AUTO-FIT: Text: ~s, Length: ~a, Scale: ~a" text text-length scale-factor)
-    (interpret-markup layout props
-      (markup #:with-color "red" #:box #:bold #:fontsize 3 #:pad-around 0.5 #:scale (cons scale-factor scale-factor) #:override #'(font-family . "SF Pro Display") content))))
-
-% Simple red box (back to working version)
-#(define (red-box text)
-  (markup #:with-color "red" #:box #:bold #:fontsize 3 text))
-
-\score {
-  <<
-    % Chord symbols — mirror the same line breaks
-    \new ChordNames {
-      \oneLineChords \break
-      \oneLineChords \break
-      \oneLineChords \break
-      \oneLineChords \break
-      \oneLineChords \break
-      \oneLineChords \break
-      \oneLineChords \break
-      \oneLineChords \break
-      \oneLineChords \break
-      \oneLineChords
-    }
-
-    % Staff with left-margin labels
-    \new Staff \with {
-      instrumentName = #(markup #:fitBoxNoScale "INTRO")          % first system - no scaling
-      shortInstrumentName = #(markup #:fitBoxNoScale "INTRO")     % default for subsequent systems until changed
-    } {
-      \global \clef treble
-
-      % Line 1  (uses instrumentName/shortInstrumentName = "INTRO")
-      \oneLineSlashes
-      \set Staff.shortInstrumentName = #(markup #:fitBox "VS 1")
-      \break
-
-      % Line 2
-      \oneLineSlashes
-      \set Staff.shortInstrumentName = #(markup #:fitBox "CH 1")
-      \break
-
-      % Line 3
-      \oneLineSlashes
-      \set Staff.shortInstrumentName = #(markup #:fitBox "VS 2")
-      \break
-
-      % Line 4
-      \oneLineSlashes
-      \set Staff.shortInstrumentName = #(markup #:fitBox "CH 2")
-      \break
-
-      % Line 5
-      \oneLineSlashes
-      \set Staff.shortInstrumentName = #(markup #:fitBox "BR 1")
-      \break
-
-      % Line 6
-      \oneLineSlashes
-      \set Staff.shortInstrumentName = #(markup #:fitBox "CH 3")
-      \break
-
-      % Line 7
-      \oneLineSlashes
-      \set Staff.shortInstrumentName = #(markup #:fitBox "SOLO")
-      \break
-
-      % Line 8
-      \oneLineSlashes
-      \set Staff.shortInstrumentName = #(markup #:fitBox "CH 4")
-      \break
-
-      % Line 9
-      \oneLineSlashes
-      \set Staff.shortInstrumentName = #(markup #:fitBox "OUTRO")
-      \break
-
-      % Line 10
-      \oneLineSlashes
-    }
-  >>
-  \layout { }
 }
