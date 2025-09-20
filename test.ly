@@ -106,12 +106,10 @@ oneLineSlashes = {
       % Line 7
       \oneLineSlashes
       \set Staff.shortInstrumentName = #(markup #:capsule "SOLO\nGTR")
-      \override Staff.InstrumentName.extra-offset = #'(0 . -1.5)
       \break
 
       % Line 8
       \oneLineSlashes
-      \revert Staff.InstrumentName.extra-offset
       \set Staff.shortInstrumentName = #(markup #:capsule "CH 4")
       \break
 
