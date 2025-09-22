@@ -66,10 +66,10 @@
           (left-offset (calculate-left-margin-offset layout))
           (y-offset (calculate-staff-alignment-offset grob)))
      
-     (ly:message "POSITIONING DEBUG: text=~a" original-text)
-     (ly:message "  is-line-start=~a" is-line-start)
-     (ly:message "  left-offset=~a" left-offset)
-     (ly:message "  y-offset=~a" y-offset)
+     ;; (ly:message "POSITIONING DEBUG: text=~a" original-text)
+     ;; (ly:message "  is-line-start=~a" is-line-start)
+     ;; (ly:message "  left-offset=~a" left-offset)
+     ;; (ly:message "  y-offset=~a" y-offset)
      
      (if is-line-start
          (begin

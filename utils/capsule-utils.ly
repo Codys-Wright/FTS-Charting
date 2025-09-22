@@ -66,7 +66,7 @@
          multi-line-markup))
       ;; No spaces - single word, keep as is
       ((not has-space)
-       (ly:message "~s: Single word pattern detected" text-str)
+       ;; (ly:message "~s: Single word pattern detected" text-str)
        text)
       ;; Has spaces - check for number patterns
       (else

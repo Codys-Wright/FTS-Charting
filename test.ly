@@ -3,8 +3,9 @@
 
 \include "utils/paper-setup.ly"
 \include "utils/measure-position-detection.ly"
-\include "utils/rehearsal-mark-positioning.ly"
 \include "utils/capsule-utils.ly"
+\include "utils/new-capsule-utils.ly"
+\include "utils/rehearsal-mark-positioning.ly"
 
 
 
@@ -13,10 +14,35 @@
 % Test the dynamic functions
 #(ly:message "Dynamic line break detection functions loaded from utility file")
 
+% Function to create a capsule marker only for marks at the beginning of a line
+#(define (capsule-marker grob)
+   "Create a capsule marker with red text only for marks at the beginning of a line"
+   (let* ((original-text (ly:grob-property grob 'text))
+          ;; Check if this mark is at the beginning of a line
+          (is-line-start (is-grob-at-line-start? grob)))
+     ;; Print the text being processed
+     (ly:message "Creating capsule marker for: ~a (line-start: ~a)" original-text is-line-start)
+     ;; Apply different capsule styling based on line position
+     (if is-line-start
+         ;; For marks at the beginning of a line: use full-width capsule
+         (let* ((capsule-stencil (make-rehearsal-mark-capsule grob)))
+           ;; Set the capsule stencil as the stencil property
+           (ly:grob-set-property! grob 'stencil capsule-stencil)
+           ;; Use extra-offset for positioning (applied after all other positioning)
+           (ly:grob-set-property! grob 'extra-offset (cons -0.5 -4.4))  ; Move right 0.5 and down 4.4 staff spaces
+           grob)
+         ;; For marks in the middle of a line: use optimal-width capsule (no extra positioning)
+         (let* ((capsule-stencil (make-rehearsal-mark-capsule-optimal grob)))
+           ;; Set the capsule stencil as the stencil property
+           (ly:grob-set-property! grob 'stencil capsule-stencil)
+           ;; No extra-offset for middle marks (they stay in their normal position)
+           grob))))
+
+
 \layout {
   \context {
     \Score
-    \override RehearsalMark.after-line-breaking = #position-rehearsal-mark-callback
+    % No global overrides - just position the custom markup specifically
   }
 }
 
@@ -36,24 +62,79 @@ chs = \transpose c' c' {
 }
 
 marks = {
-  \mark \markup "M1"
+ s1*2 |
+ \mark \markup "INTRO"
  s1*4 |
- \mark \markup "M5"
- s1*2 |
- \mark \markup "M7"
- s1*2 |
- \mark \markup "M9"
- s1*3 |
- \mark \markup "M12"
- s1*44
+ \mark \markup "VS 1"
+ s1*16 |
+ \mark \markup "CH 1"
+ s1*8 |
+ \mark \markup "VS 2"
+ s1*16 |
+ \mark \markup "CH 2"
+ s1*8 |
+ \mark \markup "KEYS"
+ s1*8 |
+ \mark \markup "GTR"
+ s1*8 |
+ \mark \markup "CH 3"
+ s1*8 |
+ \mark \markup "CH 4"
+ s1*8 |
+ \mark \markup "OUTRO"
+ s1*6 |
 }
 
 breaks = {
-  s1*4 |
-  \break
-  s1*2 
-  \break
+ s1*2 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
+ s1*4 |
+ \break
 }
+
+
 
 \score {
   <<
@@ -62,6 +143,7 @@ breaks = {
     <<
       \marks
       \breaks
+     
     >>
   }
   >>
@@ -69,6 +151,10 @@ breaks = {
     \context {
       \Score
       \remove Bar_number_engraver
+        \override RehearsalMark.break-align-symbols = #'(left-edge)
+        \override RehearsalMark.self-alignment-X = #RIGHT
+        \override RehearsalMark.self-alignment-Y = #UP
+        \override RehearsalMark.before-line-breaking = #capsule-marker
     }
   }
 }
