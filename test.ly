@@ -3,8 +3,8 @@
 
 \include "utils/paper-setup.ly"
 \include "utils/measure-position-detection.ly"
+\include "utils/rehearsal-mark-positioning.ly"
 \include "utils/capsule-utils.ly"
-\include "utils/section-engraver.ly"
 
 
 
@@ -16,7 +16,7 @@
 \layout {
   \context {
     \Score
-    \override RehearsalMark.after-line-breaking = #red-first-in-line-callback
+    \override RehearsalMark.after-line-breaking = #position-rehearsal-mark-callback
   }
 }
 

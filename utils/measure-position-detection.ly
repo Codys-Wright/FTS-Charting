@@ -1,8 +1,8 @@
 % Measure Position Detection Utilities for LilyPond
 % Dynamic functions to detect line breaks and measure positions using LilyPond's internal grob system
 
-% Include capsule utilities for styling
-\include "capsule-utils.ly"
+% This file contains only measure position detection functions
+% For rehearsal mark positioning and styling, see rehearsal-mark-positioning.ly
 
 % Dynamic scheme function to detect if a grob is at the start of a line
 % This uses LilyPond's internal grob system to determine line breaks
@@ -69,39 +69,8 @@
                  break-dir is-line-start is-line-end is-line-middle system)
      grob))
 
-% Function to make rehearsal marks red if they're first in line using after-line-breaking
-#(define-public (red-first-in-line-callback grob)
-   "Make rehearsal marks red if they're first in line using after-line-breaking callback"
-   (let* ((break-dir (ly:item-break-dir grob))
-          (is-line-start (is-grob-at-line-start? grob))
-          (original-text (ly:grob-property grob 'text)))
-     (ly:message "RED CALLBACK: break-dir=~a, is-line-start=~a, original-text=~a" 
-                 break-dir is-line-start original-text)
-     (if is-line-start
-         (begin
-           (ly:message "RED CALLBACK: Making mark RED and positioning far right!")
-           ;; Apply custom stencil with capsule and positioning for first-in-line marks
-           (let* ((layout (ly:grob-layout grob))
-                  (props (ly:grob-alist-chain grob (ly:output-def-lookup layout 'text-font-defaults)))
-                  (thickness (* (ly:output-def-lookup layout 'line-thickness) 1))
-                  (max-width (calculate-available-left-space layout))
-                  (staff-height (calculate-staff-height layout))
-                  (capsule-stencil (capsule-stencil-with-optimal-text layout props original-text thickness max-width staff-height))
-                  (red-stencil (ly:stencil-in-color capsule-stencil 1.0 0.0 0.0)))
-             (ly:grob-set-property! grob 'stencil red-stencil)
-             (ly:grob-set-property! grob 'extra-offset (cons -8 0))))
-         (begin
-           (ly:message "RED CALLBACK: Keeping mark normal color and applying capsule")
-           ;; Apply custom stencil with capsule for normal marks
-           (let* ((layout (ly:grob-layout grob))
-                  (props (ly:grob-alist-chain grob (ly:output-def-lookup layout 'text-font-defaults)))
-                  (thickness (* (ly:output-def-lookup layout 'line-thickness) 1))
-                  (max-width (calculate-available-left-space layout))
-                  (staff-height (calculate-staff-height layout))
-                  (capsule-stencil (capsule-stencil-with-optimal-text layout props original-text thickness max-width staff-height)))
-             (ly:grob-set-property! grob 'stencil capsule-stencil)
-             (ly:grob-set-property! grob 'extra-offset (cons 0 0)))))
-     grob))
+% Note: The positioning callback function has been moved to rehearsal-mark-positioning.ly
+% This file now contains only the measure position detection functions
 
 % Custom rehearsal mark formatter that makes marks red if they're first in line
 #(define-public (red-first-in-line-mark-formatter mark context)
