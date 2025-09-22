@@ -6,7 +6,7 @@
 \include "utils/capsule-utils.ly"
 \include "utils/new-capsule-utils.ly"
 \include "utils/rehearsal-mark-positioning.ly"
-\include "utils/auto-breaks.ly"
+\include "utils/auto-four-measure-breaks.ly"
 
 
 
@@ -14,6 +14,9 @@
 
 % Test the dynamic functions
 #(ly:message "Dynamic line break detection functions loaded from utility file")
+
+% Test the section measure counting
+#(ly:message "Testing section measure counting:")
 
 % Function to create a capsule marker only for marks at the beginning of a line
 #(define (capsule-marker grob)
@@ -113,8 +116,8 @@ marks = {
 
 
 
-% Use the auto-break function that generates breaks from marks
-breaks = \autoBreaks \marks
+% Test the combined functionality (both section and four-measure breaks)
+combinedBreaks = \autoSectionAndFourMeasureBreaks \marks
 
 
 
@@ -124,7 +127,8 @@ breaks = \autoBreaks \marks
   \new Staff \transpose c c' { 
     <<
       \marks
-      \breaks
+      \combinedBreaks
+      
      
     >>
   }
