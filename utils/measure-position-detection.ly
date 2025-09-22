@@ -1,6 +1,9 @@
 % Measure Position Detection Utilities for LilyPond
 % Dynamic functions to detect line breaks and measure positions using LilyPond's internal grob system
 
+% Include capsule utilities for styling
+\include "capsule-utils.ly"
+
 % Dynamic scheme function to detect if a grob is at the start of a line
 % This uses LilyPond's internal grob system to determine line breaks
 #(define-public (is-grob-at-line-start? grob)
@@ -32,6 +35,14 @@
           (system2 (get-grob-system grob2)))
      (and system1 system2 (eq? system1 system2))))
 
+% Function to analyze measure positioning in the score
+#(define-public (analyze-measure-positions)
+   "Analyze the actual measure positions and line breaks in the score"
+   (ly:message "=== MEASURE POSITION ANALYSIS ===")
+   ;; This would need to be called after the score is processed
+   ;; For now, let's create a test that shows how it would work
+   (ly:message "Measure analysis function defined - ready to use with actual grobs"))
+
 % Function to test our dynamic functions with a specific grob
 #(define-public (test-grob-line-position grob)
    "Test our dynamic functions with a specific grob"
@@ -57,3 +68,69 @@
      (ly:message "LINE BREAK TEST: break-dir=~a, line-start=~a, line-end=~a, line-middle=~a, system=~a"
                  break-dir is-line-start is-line-end is-line-middle system)
      grob))
+
+% Function to make rehearsal marks red if they're first in line using after-line-breaking
+#(define-public (red-first-in-line-callback grob)
+   "Make rehearsal marks red if they're first in line using after-line-breaking callback"
+   (let* ((break-dir (ly:item-break-dir grob))
+          (is-line-start (is-grob-at-line-start? grob))
+          (original-text (ly:grob-property grob 'text)))
+     (ly:message "RED CALLBACK: break-dir=~a, is-line-start=~a, original-text=~a" 
+                 break-dir is-line-start original-text)
+     (if is-line-start
+         (begin
+           (ly:message "RED CALLBACK: Making mark RED and positioning far right!")
+           ;; Apply custom stencil with capsule and positioning for first-in-line marks
+           (let* ((layout (ly:grob-layout grob))
+                  (props (ly:grob-alist-chain grob (ly:output-def-lookup layout 'text-font-defaults)))
+                  (thickness (* (ly:output-def-lookup layout 'line-thickness) 1))
+                  (max-width (calculate-available-left-space layout))
+                  (staff-height (calculate-staff-height layout))
+                  (capsule-stencil (capsule-stencil-with-optimal-text layout props original-text thickness max-width staff-height))
+                  (red-stencil (ly:stencil-in-color capsule-stencil 1.0 0.0 0.0)))
+             (ly:grob-set-property! grob 'stencil red-stencil)
+             (ly:grob-set-property! grob 'extra-offset (cons -8 0))))
+         (begin
+           (ly:message "RED CALLBACK: Keeping mark normal color and applying capsule")
+           ;; Apply custom stencil with capsule for normal marks
+           (let* ((layout (ly:grob-layout grob))
+                  (props (ly:grob-alist-chain grob (ly:output-def-lookup layout 'text-font-defaults)))
+                  (thickness (* (ly:output-def-lookup layout 'line-thickness) 1))
+                  (max-width (calculate-available-left-space layout))
+                  (staff-height (calculate-staff-height layout))
+                  (capsule-stencil (capsule-stencil-with-optimal-text layout props original-text thickness max-width staff-height)))
+             (ly:grob-set-property! grob 'stencil capsule-stencil)
+             (ly:grob-set-property! grob 'extra-offset (cons 0 0)))))
+     grob))
+
+% Custom rehearsal mark formatter that makes marks red if they're first in line
+#(define-public (red-first-in-line-mark-formatter mark context)
+   "Formatter that makes rehearsal marks red if they're the first in their line"
+   (ly:message "RED FORMATTER: mark=~a, context=~a" mark context)
+   (let* ((grob (ly:context-property context 'currentRehearsalMark))
+          (is-line-start (if grob (is-grob-at-line-start? grob) #f)))
+     (ly:message "RED FORMATTER: grob=~a, is-line-start=~a" grob is-line-start)
+     (if is-line-start
+         (begin
+           (ly:message "RED FORMATTER: Making mark RED!")
+           ;; If mark is already a markup, wrap it with color
+           (if (markup? mark)
+               (markup #:with-color "red" mark)
+               (markup #:with-color "red" mark)))
+         (begin
+           (ly:message "RED FORMATTER: Keeping mark normal color")
+           mark))))
+
+% Custom rehearsal mark formatter that tests our dynamic functions
+#(define-public (test-dynamic-mark-formatter mark context)
+   "Test formatter that uses our dynamic line break detection"
+   (ly:message "Formatter called with mark: ~a" mark)
+   (let* ((grob (ly:context-property context 'currentRehearsalMark))
+          (is-line-start (if grob (is-grob-at-line-start? grob) #f))
+          (is-line-end (if grob (is-grob-at-line-end? grob) #f))
+          (is-line-middle (if grob (is-grob-in-line-middle? grob) #f))
+          (system (if grob (get-grob-system grob) #f))
+          (break-dir (if grob (ly:item-break-dir grob) #f)))
+     (ly:message "Mark: ~a, grob: ~a, break-dir: ~a, line-start: ~a, line-end: ~a, line-middle: ~a, system: ~a" 
+                 mark grob break-dir is-line-start is-line-end is-line-middle system)
+     mark))
