@@ -49,7 +49,7 @@
 #(define-public (analyze-marks-for-four-measure-breaks marks-music)
    "Analyze marks music and return break positions for 4-measure breaks within sections"
    (let ((section-measure-counts (analyze-section-measure-counts marks-music)))
-     (ly:message "Section measure counts: ~a" section-measure-counts)
+     ;; (ly:message "Section measure counts: ~a" section-measure-counts)
      (generate-four-measure-breaks section-measure-counts)))
 
 printSectionMeasureCounts = #(define-music-function (marks) (ly:music?)
@@ -61,7 +61,7 @@ printSectionMeasureCounts = #(define-music-function (marks) (ly:music?)
 autoFourMeasureBreaks = #(define-music-function (marks) (ly:music?)
    "Generate automatic line breaks every 4 measures within each section"
    (let ((break-positions (analyze-marks-for-four-measure-breaks marks)))
-     (ly:message "Four-measure break positions: ~a" break-positions)
+     ;; (ly:message "Four-measure break positions: ~a" break-positions)
      ;; Generate breaks based on positions
      (let ((result '()))
        (for-each (lambda (pos)
@@ -113,7 +113,7 @@ autoSectionAndFourMeasureBreaks = #(define-music-function (marks) (ly:music?)
      
      ;; Remove duplicates and sort
      (set! all-break-positions (sort (delete-duplicates all-break-positions) <))
-     (ly:message "Combined break positions: ~a" all-break-positions)
+     ;; (ly:message "Combined break positions: ~a" all-break-positions)
      
      ;; Generate breaks using the same approach as autoSectionBreaks
      (let ((result '())
@@ -130,3 +130,4 @@ autoSectionAndFourMeasureBreaks = #(define-music-function (marks) (ly:music?)
                  all-break-positions)
        ;; Create the result as sequential music
        (make-music 'SequentialMusic 'elements result))))
+
