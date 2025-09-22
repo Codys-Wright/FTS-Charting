@@ -44,6 +44,11 @@
 
 
 \paper {
+  % Set line width
+  
+  % Enable ragged-right for natural line endings
+  ragged-right = ##t
+  
   % Reduce system-to-system spacing
   system-system-spacing = #'((basic-distance . 6)
                              (minimum-distance . 4)
@@ -55,14 +60,18 @@
                             (minimum-distance . 6)
                             (padding . 1)
                             (stretchability . 8))
+  
 }
 
 \layout {
   \context {
     \Score
-    % Reduce horizontal spacing
-    \override SpacingSpanner.spacing-increment = 0.8
-    \override SpacingSpanner.shortest-duration-space = 1.5
+    % Control individual note spacing
+    \override SpacingSpanner.spacing-increment = 3.6 
+    \override SpacingSpanner.shortest-duration-space = 2.0
+    \override SpacingSpanner.common-shortest-duration = #(ly:make-moment 1/4)
+    % Show 4/4 instead of common time
+    \override TimeSignature.style = #'numbered
   }
   
   \context {
@@ -88,6 +97,104 @@
 
 chs = \transpose c' c' {
  s1*48 
+}
+
+% Slash beats like in music-definitions.ly
+slashBeats = {
+  \override NoteHead.style = #'slash
+  \hide Stem
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
+  b4 b4 b4 b4 |
 }
 
 marks = {
@@ -119,14 +226,19 @@ marks = {
 % Test the combined functionality (both section and four-measure breaks)
 combinedBreaks = \autoSectionAndFourMeasureBreaks \marks
 
+% Global settings including key signature
+global = { \time 4/4 \key e \major }
+
 
 
 \score {
   <<
   \chords { \chs }
   \new Staff \transpose c c' { 
+    \global
     <<
       \marks
+      \slashBeats
       \combinedBreaks
       
      
