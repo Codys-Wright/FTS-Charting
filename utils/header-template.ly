@@ -26,11 +26,11 @@
     }
     \center-column {
       \fontsize #10 \override #'(font-family . "SF Pro Display Bold") \fromproperty #'header:title
-      \fontsize #-4 \line { \override #'(font-family . "SF Pro Display Thin Italic") "Transcribed by: " \override #'(font-family . "SF Pro Display Medium") \fromproperty #'header:subtitle }
+      \fontsize #-4 \line { \override #'(font-family . "SF Pro Display Thin Italic") "Transcribed by: " \override #'(font-family . "SF Pro Display Medium") \fromproperty #'header:arranger }
     }
     \column {
-      \line { \fontsize #-1 \override #'(font-family . "SF Pro Text") \fromproperty #'header:composer }
-      \line { \fontsize #-1 \override #'(font-family . "SF Pro Text") \fromproperty #'header:arranger }
+      \line { \fontsize #-1 \override #'(font-family . "SF Pro Text") "Credits 1" }
+      \line { \fontsize #-1 \override #'(font-family . "SF Pro Text") "Credits 2" }
     }
   }
 }

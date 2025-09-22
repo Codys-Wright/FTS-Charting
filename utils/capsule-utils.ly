@@ -84,10 +84,14 @@
            (first-is-number
             (ly:message "~s: Number + section pattern detected: ~a ~a (HAS NUMBER)" text-str first-part second-part)
             text)
-           ;; Multiple words without numbers - keep as is for now
+           ;; Multiple words without numbers - add newline between words
            (else
-            (ly:message "~s: Multi-word pattern detected (NO NUMBER)" text-str)
-            text)))))))
+            (let* ((space-pos (string-contains text-str " "))
+                   (first-word (substring text-str 0 space-pos))
+                   (second-word (substring text-str (+ space-pos 1)))
+                   (multi-line-text (string-append first-word "\n" second-word)))
+              ;; Recursively process the newline-containing text
+              (analyze-text-pattern multi-line-text)))))))))
 
 #(define-public (find-optimal-font-size layout props text available-width available-height)
   "Find the optimal font size for text to fit within the available space"
@@ -188,9 +192,15 @@
 
 #(define-public (calculate-text-positioning layout props text thickness max-width staff-height)
   "Calculate positioning for text within capsule, ensuring first line stays in same position"
-  (let* ((text-str (if (string? text) text (symbol->string text)))
+  (let* ((text-str (if (string? text) 
+                       text 
+                       (if (symbol? text) 
+                           (symbol->string text)
+                           "MULTI-LINE")))  ; If it's a markup object, assume multi-line
          (has-newline (string-contains text-str "\n"))
-         (multi-line-adjustment (calculate-multi-line-height-adjustment layout props text))
+         (multi-line-adjustment (if (string? text)
+                                   (calculate-multi-line-height-adjustment layout props text)
+                                   (* staff-height 0.8)))  ; Assume multi-line if markup object
          (y-length (+ staff-height multi-line-adjustment))
          (y-offset 0))  ; No offset - let the alignment system handle positioning
     (cons y-length y-offset)))
@@ -199,13 +209,13 @@
   "Create a capsule with optimally sized text that fits perfectly within the capsule"
   (let* ((available-width (- max-width thickness))
          (x-length available-width)  ; Always use full available width
-         (positioning (calculate-text-positioning layout props text thickness max-width staff-height))
+         (analyzed-text (analyze-text-pattern text))
+         (positioning (calculate-text-positioning layout props analyzed-text thickness max-width staff-height))
          (y-length (car positioning))
          (y-offset (cdr positioning))
          (text-space (calculate-available-text-space x-length y-length thickness))
          (available-text-width (car text-space))
          (available-text-height (cdr text-space))
-         (analyzed-text (analyze-text-pattern text))
          (optimal-font-size (find-optimal-font-size layout props analyzed-text available-text-width available-text-height))
          (scaled-stencil (interpret-markup layout props (markup #:fontsize optimal-font-size analyzed-text)))
          (x-ext (ly:stencil-extent scaled-stencil X))
@@ -213,22 +223,18 @@
          (x-radius (* 0.5 x-length) )
          (y-radius (* 0.5 y-length) )
          (capsule (make-capsule-stencil x-radius y-radius thickness #f))
-         (combined-stencil (ly:stencil-add
-                           scaled-stencil
-                           (ly:stencil-translate capsule
-                                                 (cons
-                                                  (interval-center x-ext)
-                                                  (interval-center y-ext)))))
-         (combined-y-ext (ly:stencil-extent combined-stencil Y))
-         (capsule-top (cdr combined-y-ext))  ; Top of the capsule
-         (staff-top (* 0.75 staff-height))
-         (alignment-offset (- staff-top capsule-top))
          (text-str (if (string? text) text (symbol->string text)))
          (has-newline (string-contains text-str "\n"))
-         (final-alignment-offset (if has-newline
-                                   (- staff-top capsule-top)
-                                   (- staff-top capsule-top))))
-    (ly:stencil-translate combined-stencil (cons 0 final-alignment-offset))))
+         (is-markup-object (not (string? analyzed-text)))
+         ;; Create the final stencil without offset
+         (final-stencil (ly:stencil-add
+                        scaled-stencil
+                        (ly:stencil-translate capsule
+                                              (cons
+                                               (interval-center x-ext)
+                                               (interval-center y-ext)))))
+         )
+    final-stencil))
 
 #(define-markup-command (capsule layout props arg)
   (markup?)
@@ -236,7 +242,8 @@
   #:properties ((thickness 1)
                 (font-size 0)
                 (x-padding 2)
-                (y-padding 1))
+                (y-padding 1)
+                (y-offset 0))
 "
 @cindex drawing capsule around text
 
@@ -255,7 +262,8 @@ line thickness and padding around the markup.
   (let ((th (* (ly:output-def-lookup layout 'line-thickness)
                thickness))
         (max-width (calculate-available-left-space layout))
-        (staff-height (calculate-staff-height layout)))
+        (staff-height (calculate-staff-height layout))
+        (offset y-offset))
     (ly:stencil-in-color (capsule-stencil-with-optimal-text layout props arg th max-width staff-height) 1.0 0.0 0.0)))
 
 #(define-markup-command (capsule-width layout props arg)
