@@ -65,7 +65,28 @@ pseudoIndents = % inline alternative to a new \score, also with right-indent
         (new-rightmost-x (+ leftmost-x new-width)) ; and set! this immediately
         (junk (ly:grob-set-property! staffsymbol-grob 'width new-rightmost-x))
         (in-situ-stil (ly:staff-symbol::print staffsymbol-grob))
-        (new-stil (ly:stencil-translate-axis in-situ-stil narrowing_ X))
+        (base-stil (ly:stencil-translate-axis in-situ-stil narrowing_ X))
+        ;; Apply thin staff lines to the narrowed stencil
+        (thickness 0.05)  ; Very thin staff lines
+        (staff-space (ly:grob-property staffsymbol-grob 'staff-space 1))
+        (line-positions (ly:grob-property staffsymbol-grob 'line-positions))
+        (line-count (ly:grob-property staffsymbol-grob 'line-count 5))
+        (base-x-ext (ly:stencil-extent base-stil X))
+        ;; Create thin lines for the narrowed staff
+        (new-stil (if (pair? line-positions)
+                      (fold (lambda (pos stencil)
+                              (ly:stencil-add stencil
+                               (make-line-stencil thickness 
+                                                  (car base-x-ext) (* pos staff-space 0.5) 
+                                                  (cdr base-x-ext) (* pos staff-space 0.5))))
+                            empty-stencil line-positions)
+                      (fold (lambda (i stencil)
+                              (let ((pos (- (* (1- line-count) 0.5) i)))
+                                (ly:stencil-add stencil
+                                 (make-line-stencil thickness 
+                                                    (car base-x-ext) (* pos staff-space) 
+                                                    (cdr base-x-ext) (* pos staff-space)))))
+                            empty-stencil (iota line-count))))
        ;(new-stil (stencil-with-color new-stil red)) ; for when debugging
         (new-x-ext (ly:stencil-extent new-stil X)))
       (ly:grob-set-property! staffsymbol-grob 'stencil new-stil)

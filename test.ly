@@ -1,5 +1,10 @@
 
 
+% Set the font to Bravura for SMuFL support
+ekmFont = "Bravura"
+
+% Include esmuflily for SMuFL support
+\include "/home/cody/Documents/Development/reference/esmuflily/ly/cosmufl.ily"
 
 \include "utils/paper-setup.ly"
 \include "utils/measure-position-detection.ly"
@@ -19,6 +24,73 @@
 
 % Test the section measure counting
 %  #(ly:message "Testing section measure counting:")
+
+% Function to create thin staff lines
+#(define (thin-staff-lines grob)
+  (define (index-cell cell dir)
+    (if (equal? dir RIGHT)
+        (cdr cell)
+        (car cell)))
+
+  (define (index-set-cell! x dir val)
+    (case dir
+      ((-1) (set-car! x val))
+      ((1) (set-cdr! x val))))
+
+  (let* ((common (ly:grob-system grob))
+         (span-points '(0 . 0))
+         (thickness 0.05)  ; Very thin staff lines
+         (width (ly:grob-property grob 'width))
+         (line-positions (ly:grob-property grob 'line-positions))
+         (staff-space (ly:grob-property grob 'staff-space 1))
+         (line-stencil #f)
+         (total-lines empty-stencil))
+
+    ;; Calculate span points like the original example
+    (for-each
+     (lambda (dir)
+       (if (and (= dir RIGHT)
+                (number? width))
+           (set-cdr! span-points width)
+           (let* ((bound (ly:spanner-bound grob dir))
+                  (bound-ext (ly:grob-extent bound bound X)))
+             
+             (index-set-cell! span-points dir
+                              (ly:grob-relative-coordinate bound common X))
+             (if (and (not (ly:item-break-dir bound))
+                      (not (interval-empty? bound-ext)))
+                 (index-set-cell! span-points dir 
+                                  (+ (index-cell span-points dir)
+                                     (index-cell bound-ext dir))))))
+       (index-set-cell! span-points dir (- (index-cell span-points dir)
+                                           (* dir thickness 0.5))))
+     (list LEFT RIGHT))
+
+    (set! span-points
+          (coord-translate span-points
+                           (- (ly:grob-relative-coordinate grob common X))))
+    (set! line-stencil
+          (make-line-stencil thickness (car span-points) 0 (cdr span-points) 0))
+
+    (if (pair? line-positions)
+        (for-each (lambda (position)
+                    (set! total-lines
+                          (ly:stencil-add
+                           total-lines
+                           (ly:stencil-translate-axis
+                            line-stencil
+                            (* position staff-space 0.5) Y))))
+                  line-positions)       
+        (let* ((line-count (ly:grob-property grob 'line-count 5))
+               (height (* (1- line-count) (/ staff-space 2))))
+          (do ((i 0 (1+ i)))                      
+              ((= i line-count))
+            (set! total-lines (ly:stencil-add
+                               total-lines
+                               (ly:stencil-translate-axis
+                                line-stencil
+                                (- height (* i staff-space)) Y))))))
+    total-lines))
 
 % Function to create a capsule marker only for marks at the beginning of a line
 #(define (capsule-marker grob)
@@ -52,6 +124,9 @@
   
   % Display spacing dimensions graphically
   % annotate-spacing = ##t
+  
+  % Make staff lines thinner (affects only staff lines, not stems/beams)
+  % line-thickness = #0.05
   
   % Reduce system-to-system spacing
   system-system-spacing = #'((basic-distance . 6)
@@ -138,12 +213,12 @@ chs = \transpose c' c' {
 
 % Define the music content
 slashBeatsContent = {
-  c4 c c c c
-  c c c
-  \repeat unfold 32 {
-  c16
+  \repeat unfold 23 {
+    \hide Stem
+    \override NoteHead.style = #'slash
+    b4 b4 b4 b4 |
   }
-  c2 c c
+  
 }
 
 % Apply pseudoIndents only to the first line
@@ -235,6 +310,10 @@ chordProgression = \chordmode {
   \layout {
     \context {
       \Score
+        % Enable SMuFL support for Leland font (excluding noteheads for now)
+        \ekmSmuflOn #'all
+        % Make staff lines thinner using custom stencil
+        \override StaffSymbol.stencil = #thin-staff-lines
         \override BarNumber.font-size = -5  % Make bar numbers smaller
         \override BarNumber.Y-offset = #4.5  % Move bar numbers to the right
         \override BarNumber.X-offset = #0.4  % Move bar numbers to the right
