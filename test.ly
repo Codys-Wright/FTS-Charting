@@ -190,17 +190,9 @@ marks = {
 % Test the combined functionality (breaks and automatic pseudo-indents for short lines)
 % First, let's see what positions need pseudo-indents
 testPositions = \getShortLinePositions \marks
-combinedBreaks = \autoSectionAndFourMeasureBreaks \marks
 
-% Manual pseudo-indents based on the analysis
-% From the analysis, we know that positions 2 and 90 need pseudo-indents
-manualPseudoIndents = {
-  s1*2 |
-  \pseudoIndents 0 44
-  s1*88 |
-  \pseudoIndents 0 44
-  s1*2
-}
+% Combined function that does both breaks and pseudo-indents in the right order
+combinedBreaks = \autoBreaksAndPseudoIndents \marks
 
 % Global settings including key signature
 global = { \time 4/4 \key e \major }
@@ -235,7 +227,6 @@ chordProgression = \chordmode {
       \marks
       \slashBeats
       \combinedBreaks
-      \testPositions
       
      
     >>
