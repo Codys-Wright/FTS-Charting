@@ -20,6 +20,26 @@
                             (padding . 4)
                             (stretchability . 6))
   
+  % Add space between systems (staff lines)
+  system-system-spacing = #'((basic-distance . 6)
+                            (minimum-distance . 6)
+                            (padding . 1.5)
+                            (stretchability . 60))
+  
+  % Control number of systems per page
+  % systems-per-page = 4        % Exact number of systems per page
+  % min-systems-per-page = 3    % Minimum systems per page
+  % max-systems-per-page = 5    % Maximum systems per page
+  
+  % Display spacing dimensions graphically
+  % annotate-spacing = ##t
+  
+  % Increase spacing at bottom of last page
+  last-bottom-spacing = #'((basic-distance . 8)
+                          (minimum-distance . 6)
+                          (padding . 4)
+                          (stretchability . 6))
+  
   % Use mixed fonts
   % Default Emmentaler for music notation, MuseJazz Text for chords and text, SF Pro Display for titles and fitBoxes
   #(define fonts
