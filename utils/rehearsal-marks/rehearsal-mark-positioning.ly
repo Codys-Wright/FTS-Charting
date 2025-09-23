@@ -3,7 +3,7 @@
 % with dynamic alignment to staff lines and left margins
 
 % Include capsule utilities for styling
-\include "capsule-utils.ly"
+\include "../capsules/capsule-utils.ly"
 
 % Function to calculate available left space for positioning
 #(define (calculate-available-left-space layout)
