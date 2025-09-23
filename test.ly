@@ -7,8 +7,8 @@
 \include "utils/new-capsule-utils.ly"
 \include "utils/rehearsal-mark-positioning.ly"
 \include "utils/auto-four-measure-breaks.ly"
-\include "utils/auto-pseudo-indent.ly"
 \include "utils/pseudo-indents.ly"
+\include "utils/auto-pseudo-indents.ly"
 
 
 
@@ -146,21 +146,6 @@ slashBeatsContent = {
   c2 c c
 }
 
-% Debug function to show which lines need indents with detailed output
-debugIndents = #(define-music-function (marks) (ly:music?)
-   (let ((indent-lines (identify-lines-needing-indents marks)))
-     (ly:message "=== DEBUG: Lines needing indents ===")
-     (ly:message "Raw data: ~a" indent-lines)
-     (ly:message "Number of lines needing indents: ~a" (length indent-lines))
-     ;; Show which specific measures need indents
-     (for-each (lambda (line-info)
-                 (let ((position (car line-info))
-                       (indent (cdr line-info)))
-                   (ly:message "  -> Measure ~a needs indent of ~a" position indent)))
-               indent-lines)
-     (ly:message "=== END DEBUG ==="))
-   marks)
-
 % Apply pseudoIndents only to the first line
 slashBeats = {
   % First line - make it narrower with right-indent
@@ -198,17 +183,24 @@ marks = {
   
 }
 
-indents = {
+% Manual indents removed - now handled automatically by autoBreaksAndPseudoIndents
 
- s1*90 |
+
+
+% Test the combined functionality (breaks and automatic pseudo-indents for short lines)
+% First, let's see what positions need pseudo-indents
+testPositions = \getShortLinePositions \marks
+combinedBreaks = \autoSectionAndFourMeasureBreaks \marks
+
+% Manual pseudo-indents based on the analysis
+% From the analysis, we know that positions 2 and 90 need pseudo-indents
+manualPseudoIndents = {
+  s1*2 |
+  \pseudoIndents 0 44
+  s1*88 |
   \pseudoIndents 0 44
   s1*2
 }
-
-
-
-% Test the combined functionality (both section and four-measure breaks)
-combinedBreaks = \autoSectionAndFourMeasureBreaks \marks
 
 % Global settings including key signature
 global = { \time 4/4 \key e \major }
@@ -243,6 +235,7 @@ chordProgression = \chordmode {
       \marks
       \slashBeats
       \combinedBreaks
+      \testPositions
       
      
     >>
@@ -256,7 +249,6 @@ chordProgression = \chordmode {
       \override RehearsalMark.self-alignment-X = #RIGHT
       \override RehearsalMark.self-alignment-Y = #UP
       \override RehearsalMark.before-line-breaking = #capsule-marker
-      \override System.after-line-breaking = #auto-pseudo-indent-callback
     }
   }
 }

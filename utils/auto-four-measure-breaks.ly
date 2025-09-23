@@ -130,4 +130,3 @@ autoSectionAndFourMeasureBreaks = #(define-music-function (marks) (ly:music?)
                  all-break-positions)
        ;; Create the result as sequential music
        (make-music 'SequentialMusic 'elements result))))
-
