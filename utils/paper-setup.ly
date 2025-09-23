@@ -47,5 +47,14 @@
                           "MuseJazz Text"
                           "MuseJazz Text"
                           (/ staff-height pt 20)))
+}
+
+% Global layout settings
+\layout {
+  \context {
+    \Score
+    % Show 4/4 instead of common time
+    \override TimeSignature.style = #'numbered
+  }
   
 }
