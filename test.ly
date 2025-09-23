@@ -224,9 +224,9 @@ chordProgression = \chordmode {
   \new Staff \transpose c c' { 
     \global
     <<
-      \marks
-      \slashBeats
-      \combinedBreaks
+    \marks
+    \slashBeats
+    \combinedBreaks
       
      
     >>
@@ -235,11 +235,14 @@ chordProgression = \chordmode {
   \layout {
     \context {
       \Score
-      \remove Bar_number_engraver
+        \override BarNumber.font-size = -5  % Make bar numbers smaller
+        \override BarNumber.Y-offset = #4.5  % Move bar numbers to the right
+        \override BarNumber.X-offset = #0.4  % Move bar numbers to the right
       \override RehearsalMark.break-align-symbols = #'(left-edge)
       \override RehearsalMark.self-alignment-X = #RIGHT
       \override RehearsalMark.self-alignment-Y = #UP
       \override RehearsalMark.before-line-breaking = #capsule-marker
+        % Position bar numbers to avoid conflict with rehearsal marks
     }
   }
 }

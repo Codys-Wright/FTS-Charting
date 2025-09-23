@@ -42,6 +42,20 @@
           (y-difference (- staff-top grob-top)))
      y-difference))
 
+% Function to calculate dynamic Y-offset that adapts to staff position changes
+#(define (dynamic-y-offset-callback grob)
+   "Calculate Y-offset that dynamically adapts to staff position changes"
+   (let* ((staff (ly:grob-parent grob Y))
+          (staff-extent (if staff (ly:grob-extent staff staff Y) (cons 0 0)))
+          (staff-top (cdr staff-extent))
+          (staff-bottom (car staff-extent))
+          (staff-center (/ (+ staff-top staff-bottom) 2))
+          (grob-extent (ly:grob-extent grob grob Y))
+          (grob-center (/ (+ (cdr grob-extent) (car grob-extent)) 2))
+          ;; Calculate Y offset to align with staff center
+          (y-offset (- staff-center grob-center)))
+     y-offset))
+
 % Function to calculate left margin offset
 #(define (calculate-left-margin-offset layout)
    "Calculate the left margin offset for positioning"
@@ -63,23 +77,25 @@
           (max-width (calculate-available-left-space layout))
           (staff-height (calculate-staff-height layout))
           (capsule-stencil (capsule-stencil-with-optimal-text layout props original-text thickness max-width staff-height))
-          (left-offset (calculate-left-margin-offset layout))
-          (y-offset (calculate-staff-alignment-offset grob)))
+          (left-offset (calculate-left-margin-offset layout)))
      
      ;; (ly:message "POSITIONING DEBUG: text=~a" original-text)
      ;; (ly:message "  is-line-start=~a" is-line-start)
      ;; (ly:message "  left-offset=~a" left-offset)
-     ;; (ly:message "  y-offset=~a" y-offset)
      
      (if is-line-start
          (begin
            ;; First-in-line marks: red color and left margin positioning
            (let* ((red-stencil (ly:stencil-in-color capsule-stencil 1.0 0.0 0.0)))
              (ly:grob-set-property! grob 'stencil red-stencil)
-             (ly:grob-set-property! grob 'extra-offset (cons left-offset y-offset))))
+             ;; Use dynamic Y-offset callback that adapts to staff position
+             (ly:grob-set-property! grob 'Y-offset dynamic-y-offset-callback)
+             ;; Use fixed X-offset for left margin positioning
+             (ly:grob-set-property! grob 'X-offset left-offset)))
          (begin
            ;; Normal marks: black color and normal positioning
            (ly:grob-set-property! grob 'stencil capsule-stencil)
-           (ly:grob-set-property! grob 'extra-offset (cons 0 y-offset))))
+           ;; Use dynamic Y-offset callback for consistent alignment
+           (ly:grob-set-property! grob 'Y-offset dynamic-y-offset-callback)))
      
      grob))
