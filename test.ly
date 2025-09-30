@@ -60,7 +60,9 @@ keys = {
  s1*8 |
  %GTR
  \key f \major
- s1*8 |
+ s1*6 |
+ \key ges \major
+ s1*2
  %CH 3
  s1*8 |
  %CH 4
@@ -135,10 +137,10 @@ newChordProgression = \chordmode {
   g1:m9 | c1:sus13 | f1:maj9 | d2:7 ~8. ges16:dim~8 g8:m9  %RECHECK THIS RHYTHM LATER
   g1:m9 | c1:sus13 | f1:maj9 | d2.:7  ges4:dim | \barNumberCheck #55
 
-%KEYS
-bes2.:m9~8. es16:sus13~  |2. ~8. c16:m7~ |2. ~8. f16:m7~ |2. ~8. bes16:m9~ | \barNumberCheck #59
-bes2.:m9~8. es16:sus13~  |2~ 8. d16:sus13~ 8 des8:sus13 | \barNumberCheck #61
-c1:sus13 | c2:sus13  s8. s16 s8. g16:m9 | \barNumberCheck #63
+  %KEYS
+  bes2.:m9~8. es16:sus13~  |2. ~8. c16:m7~ |2. ~8. f16:m7~ |2. ~8. bes16:m9~ | \barNumberCheck #59
+  bes2.:m9~8. es16:sus13~  |2~ 8. d16:sus13~ 8 des8:sus13 | \barNumberCheck #61
+  c1:sus13 | c2:sus13  s8. s16 s8. g16:m9 | \barNumberCheck #63
 
 }
 
@@ -146,19 +148,148 @@ c1:sus13 | c2:sus13  s8. s16 s8. g16:m9 | \barNumberCheck #63
 
 rhythmContent = {
   \override NoteHead.style = #'slash
+  \override Accidental.stencil = ##f
   \transpose d d, {
 
-  \repeat unfold 2 { \slashMarks }
+  s1*2
 
     \barNumberCheck #3 %INTRO
-    d4  d4 d4 d8.  d16 | % 4
-     d4  d4  d8. d16 ~ d8 d8 |
-  \repeat unfold 3 { \slashMarks }
-       d4  d4 
+    s4  s4 s4 d8.  d16 | % 4
+     s4  s4  d8. d16 ~ d8 d8 |
+  s1*3
+       s4  s4 
          d8. -> d16 -> d8 d8 ~ -> | % 9
 
    d4. d8 ~ d2 | \barNumberCheck #10
    d16 d16 r8 r8 d16 d16 r4 d4 | % 11
+   
+   \barNumberCheck #11 %VS 1
+   s1  | % 12
+   s1  | % 13
+   s1  | % 14
+   s1 | %melody here % 15
+   s1  | % 16
+   s1  | % 17
+   s1  | % 18
+   s1 | %melody here % 19
+   s1  | \barNumberCheck #20
+   s1  | % 21
+   s1  | % 22
+   s1 | %melody here % 23
+   s1  | % 24
+   s1  | % 25
+   s1  | % 26
+   s1 | % 27
+   
+   \barNumberCheck #27 %CH 1
+   s1  | % 28
+   s1  | % 29
+   s1  | \barNumberCheck #30
+   s1 | %melody here % 31
+   s1  | % 32
+   s1  | % 33
+   s1  | % 34
+   s1 | %melody here % 35
+   
+   \barNumberCheck #35 %VS 2
+   r4 s2. | % 36
+   s1  | % 37
+   s1  | % 38
+   s1 | %melody here % 39
+   s1  | \barNumberCheck #40
+   s1  | % 41
+   s1  | % 42
+   s1 | %melody here % 43
+   s1  | % 44
+   s1  | % 45
+   s1  | % 46
+   s1 | %melody here % 47
+   s1  | % 48
+   s1  | % 49
+   s1  | \barNumberCheck #50
+   d8 8 8 8 8 8 r8. f16 | % 51 MELODY NOTE HERE THAT HAS TO BE FIXED
+   
+   \barNumberCheck #51 %CH 2
+   s1 | % 52
+   s1 | % 53
+   s1   | % 54
+   s1 | %melody here % 55
+   s1  | % 56
+   s2.  d8. 16 | % 57
+   s1  | % 58
+   s1 | %melody here % 59
+   
+   \barNumberCheck #59 %KEYS
+   s2. des8. 16 | % 60
+   s2. 8. 16 | % 61
+   s2. 8. 16 | % 62
+   s2. 8. 16 | % 63
+   s2. 8. 16 | % 64
+   s2 8. 16 ~ 8 8 | % 65
+   s1  | % 66
+   s2  16 16 16 r16 r8. 16 | % 67
+   
+   \barNumberCheck #67 %GTR
+    s2. d8. 16 | % 68
+   s2. 8. 16 | % 69
+   s1  | \barNumberCheck #70
+   s1 | %melody here % 71
+   s2. 8. 16 | % 72
+   s2 4. des8 ~ | % 73
+   des4. 8 ~ 4. 8 ~ | % 74
+   4. 8 s2 | % 75
+   
+   \barNumberCheck #75 %CH 3
+   R1 | % 76
+   r4 s2 r8 8 ~ | % 77
+   %r4 bes4 ces8 des8 r8 d8 ~ | % 77
+   4. 8 ~ 4. 8 ~ | % 78
+   4 s2 r8 8 ~ | % 79
+   %4 4 f8 ges8 r8 d8 ~ | % 79
+   4 s4 4. 8 ~ | \barNumberCheck #80
+   4. 8 ~ 2 | % 81
+   4. 8 ~ 4. 8 ~ | % 82
+   4 s2. | % 83
+   
+   \barNumberCheck #83 %CH 4
+   s1  | % 84
+   s1  | % 85
+   s1  | % 86
+   s2 8 ~ 4 8 | % 87
+   s1  | % 88
+   s1  | % 89
+   s1  | \barNumberCheck #90
+   s1  | % 91
+   
+   \barNumberCheck #91 %OUTRO
+   s1  | % 92
+   s2 8. 16 ~ 8 8 | % 93
+   s1  | % 94
+   s2 8. 16 ~ 8 8 | % 95
+   s1  | % 96
+   s2 4. 8 | % 97
+
+}}
+
+slashContent = {
+  \override NoteHead.style = #'slash
+  \override Stem.stencil = ##f
+  \override Accidental.stencil = ##f
+  \transpose d d, {
+
+
+  d4 d4 d4 d4 d4 d4 d4 d4
+
+    \barNumberCheck #3 %INTRO
+    d4  4 4 s8.  s16 | % 4
+     4  4  s8. s16 ~ s8 s8 |
+     4 4 4 4 4 4 4 4 4 4 4 4
+
+       d4  d4 
+         s2 |
+
+   s1| \barNumberCheck #10
+   s1| % 11
    
    \barNumberCheck #11 %VS 1
    d4 4 4 4 | % 12
@@ -189,7 +320,7 @@ rhythmContent = {
    s1 | %melody here % 35
    
    \barNumberCheck #35 %VS 2
-   r4 4 4 4 | % 36
+   s4 4 4 4 | % 36
    4 4 4 4 | % 37
    4 4 4 4 | % 38
    s1 | %melody here % 39
@@ -204,7 +335,7 @@ rhythmContent = {
    d4 4 4 4 | % 48
    4 4 4 4 | % 49
    4 4 4 4 | \barNumberCheck #50
-   d8 d8 d8 d8 d8 d8 r8. f16 | % 51 MELODY NOTE HERE THAT HAS TO BE FIXED
+   s1| % 51 MELODY NOTE HERE THAT HAS TO BE FIXED
    
    \barNumberCheck #51 %CH 2
    d4 4 4 4 | % 52
@@ -212,59 +343,59 @@ rhythmContent = {
    4 4 4 s4  | % 54
    s1 | %melody here % 55
    d4 4 4 4 | % 56
-   4 4 4 8. 16 | % 57
+   4 4 4 s8. s16 | % 57
    4 4 4 4 | % 58
    s1 | %melody here % 59
    
    \barNumberCheck #59 %KEYS
-   d4 4 4 8. 16 | % 60
-   d4 4 4 8. 16 | % 61
-   d4 4 4 8. 16 | % 62
-   d4 4 4 8. 16 | % 63
-   d4 4 4 8. 16 | % 64
-   d4 4 8. 16 ~ 8 8 | % 65
+   d4 4 4 s4 | % 60
+   d4 4 4 s4 | % 61
+   d4 4 4 s4 | % 62
+   d4 4 4 s4 | % 63
+   d4 4 4 s4 | % 64
+   d4 4 s2| % 65
    d4 4 4 4 | % 66
-   4 4 16 16 16 r16 r8. d16 | % 67
+   4 4 s2| % 67
    
    \barNumberCheck #67 %GTR
-    d4 4 4 8. 16 | % 68
-   4 4 4 8. 16 | % 69
+    d4 4 4 s4 | % 68
+   4 4 4 s4 | % 69
    4 4 4 4 | \barNumberCheck #70
    s1 | %melody here % 71
-   d4 4 4 8. 16 | % 72
-   4 4 4. 8 ~ | % 73
-   4. 8 ~ 4. 8 ~ | % 74
-   4. 8 4 4 | % 75
+   d4 4 4 s4 | % 72
+   4 4 s2 | % 73
+   s1| % 74
+   s2 des4 4 | % 75
    
    \barNumberCheck #75 %CH 3
    R1 | % 76
-   r4 s4 s8 s8 r8 d8 ~ | % 77
+   s1| % 77
    %r4 bes4 ces8 des8 r8 d8 ~ | % 77
-   d4. 8 ~ 4. 8 ~ | % 78
-   4 s4 s8 s8 r8 d8 ~ | % 79
+   s1| % 78
+   s1| % 79
    %4 4 f8 ges8 r8 d8 ~ | % 79
-   d4 4 4. 8 ~ | \barNumberCheck #80
-   4. 8 ~ 2 | % 81
-   4. 8 ~ 4. 8 ~ | % 82
-   4 4 4 4 | % 83
+   s4 4 s2 | \barNumberCheck #80
+   s1| % 81
+   s1| % 82
+   s4 4 4 4 | % 83
    
    \barNumberCheck #83 %CH 4
-   d4 4 4 4 | % 84
+   4 4 4 4 | % 84
    4 4 4 4 | % 85
    4 4 4 4 | % 86
-   4 4 8 ~ 4 8 | % 87
+   4 4 s2 | % 87
    4 4 4 4 | % 88
    4 4 4 4 | % 89
    4 4 4 4 | \barNumberCheck #90
    4 4 4 4 | % 91
    
    \barNumberCheck #91 %OUTRO
-   d4 4 4 4 | % 92
-   d4 4 8. 16 ~ 8 8 | % 93
+   4 4 4 4 | % 92
+   4 4 s2 | % 93
    4 4 4 4 | % 94
-   4 4 8. 16 ~ 8 8 | % 95
+   4 4 s2 | % 95
    4 4 4 4 | % 96
-   4 4 4. 8 | % 97
+   4 4 s2 | % 97
 
 }}
 
@@ -321,19 +452,20 @@ melodyContent = {
   \barNumberCheck #70 %GTR Melody
   f4 g4 a4 r16 c8 [ c16 ] | % 71
 
-s1*5
+  s1*5
   \barNumberCheck #76 %GTR Melody
    s4 bes,4 ces8 des8 s8 s8  | % 77
 
-s1
+  s1
 
-\barNumberCheck #78
-   s4 e4 f8 ges8 s8 s8 ~ | % 79
+  \barNumberCheck #78
+   s4 es4 f8 ges8 s8 s8 ~ | % 79
   
   }
 }
 
  PartPOneVoiceOneChords =  \chordmode {
+  
         | % 1
         s1 | % 2
         s1 | 
@@ -458,6 +590,7 @@ s1
 
  
 
+
 \score {
   <<
    \new ChordNames = "PartPOneVoiceOneChords" {\set chordChanges = ##t \PartPOneVoiceOneChords}
@@ -477,6 +610,7 @@ s1
     \marks
     \new Voice { \rhythmContent }
     \new Voice { \melodyContent }
+    \new Voice { \slashContent }
     \combinedBreaks
       % \repeat unfold 92 { \slashMarks }
      
