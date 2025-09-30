@@ -23,5 +23,6 @@
       \override RehearsalMark.self-alignment-X = #RIGHT
       \override RehearsalMark.self-alignment-Y = #UP
       \override RehearsalMark.before-line-breaking = #capsule-marker
+
   }
 }

@@ -480,8 +480,8 @@ PartPOneVoiceOne =  \relative es {
     
     PartPOneVoiceOneChords =  \chordmode {
         | % 1
-        s4 s4 s4 s4 | % 2
-        s4 s4 s4 s4 | % 3
+        s1| % 2
+        s1| % 3
         g4:m9 s4 s4 s8. c16:13.11 | % 4
         s4 s4 c8.:13.11 des16:13.11 s8 d8:13.11 | % 5
         es4:13.11 s4 s4 d4:13.11 | % 6

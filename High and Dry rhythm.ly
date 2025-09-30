@@ -34,7 +34,7 @@
     }
 PartPOneVoiceOne =  \relative es {
     \clef "bass" \numericTimeSignature\time 4/4 \key f \major | % 1
-    \tempo 4=88 
+    \tempo 4=88 \once \override NoteHead.style = #'slash \stemNeutral es4
     _\markup{ \with-color #(rgb-color 1.0 0.46875 0.0) {Drum Intro!} }
     \once \override NoteHead.style = #'slash \stemNeutral es4 \once
     \override NoteHead.style = #'slash \stemNeutral es4 \once \override

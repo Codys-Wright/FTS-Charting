@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../reference/lilypond"
+		},
+		{
+			"path": "../reference/esmuflily"
+		}
+	],
+	"settings": {}
+}
