@@ -1,4 +1,4 @@
-
+\version "2.24.0"
 
 % Set the font to Bravura for SMuFL support
 ekmFont = "Bravura"
@@ -75,7 +75,7 @@ keys = {
 
 
 
-\version "2.24.0"
+
 
 
 chs = \transpose c' c' {
@@ -585,10 +585,9 @@ melodyContent = {
         s4 s4 es8.:11 d16:11 s8 des8:11 | % 95
         des4:11 s4 s4 s4 | % 96
         s4 s4 s4. s8 \bar "|."
-        }
+    
+ }
         
-
- 
 
 
 \score {
