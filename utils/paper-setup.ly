@@ -14,22 +14,21 @@
   print-first-page-number = ##f
   bookTitleMarkup = ##f
   
-  % Add space between header and score
-  markup-system-spacing = #'((basic-distance . 25)
-                            (minimum-distance . 8)
-                            (padding . 4)
-                            (stretchability . 6))
+  % % Add space between header and score
+  % markup-system-spacing = #'((basic-distance . 25)
+  %                           (minimum-distance . 8)
+  %                           (padding . 4)
+  %                           (stretchability . 6))
   
   % Add space between systems (staff lines)
-  system-system-spacing = #'((basic-distance . 6)
-                            (minimum-distance . 6)
-                            (padding . 1.5)
-                            (stretchability . 60))
+  system-system-spacing = #'(
+     (basic-distance . 15)
+                            )
   
   % Control number of systems per page
-  % systems-per-page = 4        % Exact number of systems per page
-  % min-systems-per-page = 3    % Minimum systems per page
-  % max-systems-per-page = 5    % Maximum systems per page
+  % systems-per-page = 9
+  % min-systems-per-page = 9    % Minimum systems per page
+  % max-systems-per-page = 10    % Maximum systems per page
   
   % Display spacing dimensions graphically
   % annotate-spacing = ##t
@@ -41,7 +40,7 @@
                           (stretchability . 6))
   
   % Use mixed fonts
-  % Default Emmentaler for music notation, MuseJazz Text for chords and text, SF Pro Display for titles and fitBoxes
+  % Default Emmentaler for music notation, Leland for text, SF Pro Display for titles and fitBoxes
   #(define fonts
     (make-pango-font-tree "Leland"
                           "MuseJazz Text"

@@ -14,7 +14,7 @@
   subtitle = #masterRhythm
   composer = #transcribedBy
   arranger = #transcriberName
-  tagline = ##f
+  tagline = \markup { \with-color #grey "Formatted with FTS-Extensions " }
 }
 
 % Custom title layout with part type in top left

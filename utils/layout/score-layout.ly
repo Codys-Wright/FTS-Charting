@@ -2,7 +2,7 @@
 % This file contains score-specific layout overrides and callbacks
 
 % Include required dependencies
-\include "/home/cody/Documents/Development/reference/esmuflily/ly/cosmufl.ily"
+\include "../third-party/esmuflily/ly/cosmufl.ily"
 \include "../staff/thin-staff-lines.ly"
 \include "../rehearsal-marks/capsule-markers.ly"
 
@@ -12,6 +12,7 @@
     \Score
       % Enable SMuFL support for Bravura font
       \ekmSmuflOn #'all
+      % \override SpacingSpanner.packed-spacing = ##t
       % Make staff lines thinner using custom stencil
       \override StaffSymbol.stencil = #thin-staff-lines
       % Bar number settings
