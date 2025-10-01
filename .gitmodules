@@ -1,0 +1,3 @@
+[submodule "utils/third-party/esmuflily"]
+	path = utils/third-party/esmuflily
+	url = git@github.com:tr-igem/esmuflily.git
