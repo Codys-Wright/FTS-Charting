@@ -5,6 +5,22 @@
 % Include the original LSR snippet definitions
 \include "utils/affecting-barline-items.ly"
 
+% Include measure position detection utilities
+\include "utils/capsules/measure-position-detection.ly"
+
+% Callback function to process key change events and check line start positions
+% For now, we'll use a simple approach based on the break positions we can see in the output
+#(define-public (key-change-line-start-callback measure-number)
+   "Callback function to check if a measure number is at the start of a line"
+   ;; Based on the break positions we see in the output: (0 2 6 10 14 18 22 26 30 34 38 42 46 50 54 58 62 66 70 74 78 82 86 90 94)
+   ;; Break positions represent where lines end, so the next measure starts a new line
+   ;; So if there's a break at position 58, measure 59 starts a new line
+   (let* ((break-positions '(0 2 6 10 14 18 22 26 30 34 38 42 46 50 54 58 62 66 70 74 78 82 86 90 94))
+          (previous-break-positions (map (lambda (pos) (+ pos 1)) break-positions))
+          (is-line-start (member measure-number previous-break-positions)))
+     (ly:message "MEASURE ~a: line-start=~a" measure-number (if is-line-start #t #f))
+     (if is-line-start #t #f)))
+
 %---------- Music Functions
 
 % Function to color key signatures at line breaks (using original snippet)
@@ -99,39 +115,39 @@ colorTimeChange = {
 }
 
 % Custom engraver to track key change events and color key signatures at line breaks
-% Based on the breaks utilities pattern
+% Based on the rehearsal marks system approach
 #(define-public (key-change-tracker-engraver context)
-  (let ((key-change-positions '())
-        (first-key-change #t)
-        (first-key-sig #t))
+  (let ((first-key-change #t)
+        (first-key-sig #t)
+        (pending-key-changes #f))
     (make-engraver
      (listeners
       ((key-change-event engraver event)
-       (let* ((moment (ly:context-current-moment context)))
-         (if (ly:moment? moment)
-             (let* ((beat (ly:moment-main-numerator moment))
-                    (position (ly:moment-main-denominator moment)))
-               (set! key-change-positions 
-                     (cons (cons beat position) key-change-positions))
-               (if first-key-change
-                   (begin
-                     (set! first-key-change #f)
-                     (ly:message "KEY CHANGE EVENT at beat ~a/~a (SKIPPING - initial key)" beat position))
-                   (ly:message "KEY CHANGE EVENT at beat ~a/~a" beat position)))
-             (ly:message "KEY CHANGE EVENT - no valid moment")))))
+       (if first-key-change
+           (set! first-key-change #f)
+           (let ((moment (ly:context-current-moment context)))
+             (if (ly:moment? moment)
+                 (let ((beat (ly:moment-main-numerator moment))
+                       (unit (ly:moment-main-denominator moment)))
+                   (let ((measure (+ beat 1)))
+                     (ly:message "KEY CHANGE EVENT at beat ~a/~a (measure ~a)" beat unit measure)
+                     ;; Use the callback to check if this measure is at a line start
+                     (key-change-line-start-callback measure)
+                     (set! pending-key-changes #t)))))))
      (acknowledgers
-      ((key-signature-interface engraver grob source-engraver)
-       (let* ((non-default (ly:grob-property grob 'non-default #f))
-              (courtesy (ly:grob-property grob 'courtesy #f))
-              (break-dir (ly:item-break-dir grob)))
-         (ly:message "KEY SIG: non-default=~a, courtesy=~a, break-dir=~a, first-sig=~a" non-default courtesy break-dir first-key-sig)
-         ;; Color red if it's a non-default key signature (actual key change) at a line break
-         ;; BUT skip the very first key signature (initial key)
-         (if (and (or non-default courtesy) break-dir (not first-key-sig))
-             (begin
-               (ly:message "COLORING KEY SIG - key change at line break")
-               (ly:grob-set-property! grob 'color red))
-             (if first-key-sig
-                 (ly:message "SKIPPING first key signature")))
-         ;; Mark that we've seen the first key signature
-         (set! first-key-sig #f)))))))
+      ((grob-interface engraver grob source-engraver)
+       (if (grob::has-interface grob 'key-signature-interface)
+           (let* ((non-default (ly:grob-property grob 'non-default #f))
+                  (courtesy (ly:grob-property grob 'courtesy #f))
+                  (is-line-start (is-grob-at-line-start? grob))
+                  (grob-moment (ly:grob-property grob 'when))
+                  (grob-beat (if (ly:moment? grob-moment) (ly:moment-main-numerator grob-moment) 0))
+                  (grob-measure (+ grob-beat 1)))
+             (ly:message "KEY SIGNATURE GROB: measure=~a, non-default=~a, courtesy=~a, line-start=~a" grob-measure non-default courtesy is-line-start)
+             (if (not first-key-sig)
+                 (if (and is-line-start pending-key-changes)
+                     (begin
+                       (ly:message "COLORING KEY SIGNATURE at measure ~a: line-start=~a" grob-measure is-line-start)
+                       (ly:grob-set-property! grob 'color red)
+                       (set! pending-key-changes #f))))
+             (set! first-key-sig #f)))))))))
