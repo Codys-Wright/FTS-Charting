@@ -8,6 +8,18 @@
 % Include measure position detection utilities
 \include "utils/capsules/measure-position-detection.ly"
 
+% Function to find the next break measure after a given measure number
+#(define-public (find-next-break-measure current-measure)
+   "Find the next break measure after the given measure number"
+   ;; Based on the break positions we see in the output: (0 2 6 10 14 18 22 26 30 34 38 42 46 50 54 58 62 66 70 74 78 82 86 90 94)
+   ;; Break positions represent where lines end, so the next measure starts a new line
+   (let* ((break-positions '(0 2 6 10 14 18 22 26 30 34 38 42 46 50 54 58 62 66 70 74 78 82 86 90 94))
+          (line-start-positions (map (lambda (pos) (+ pos 1)) break-positions))
+          (next-break (find (lambda (pos) (> pos current-measure)) line-start-positions)))
+     (if next-break
+         next-break
+         #f)))
+
 % Callback function to process key change events and check line start positions
 % For now, we'll use a simple approach based on the break positions we can see in the output
 #(define-public (key-change-line-start-callback measure-number)
@@ -115,11 +127,12 @@ colorTimeChange = {
 }
 
 % Custom engraver to track key change events and color key signatures at line breaks
-% Based on the rehearsal marks system approach
+% Based on the rehearsal marks system approach - detect breaks and color key signatures after them
 #(define-public (key-change-tracker-engraver context)
   (let ((first-key-change #t)
         (first-key-sig #t)
-        (pending-key-changes #f))
+        (pending-key-changes #f)
+        (key-change-measures '()))
     (make-engraver
      (listeners
       ((key-change-event engraver event)
@@ -132,7 +145,15 @@ colorTimeChange = {
                    (let ((measure (+ beat 1)))
                      (ly:message "KEY CHANGE EVENT at beat ~a/~a (measure ~a)" beat unit measure)
                      ;; Use the callback to check if this measure is at a line start
-                     (key-change-line-start-callback measure)
+                     (let ((is-line-start (key-change-line-start-callback measure)))
+                       (if is-line-start
+                           (ly:message "Key change at measure ~a is at line start - will color immediately" measure)
+                           (let ((next-break (find-next-break-measure measure)))
+                             (if next-break
+                                 (ly:message "Key change at measure ~a is NOT at line start - next break will be at measure ~a" measure next-break)
+                                 (ly:message "Key change at measure ~a is NOT at line start - no next break found" measure)))))
+                     ;; Store the measure number where key change occurred
+                     (set! key-change-measures (cons measure key-change-measures))
                      (set! pending-key-changes #t)))))))
      (acknowledgers
       ((grob-interface engraver grob source-engraver)
@@ -143,11 +164,16 @@ colorTimeChange = {
                   (grob-moment (ly:grob-property grob 'when))
                   (grob-beat (if (ly:moment? grob-moment) (ly:moment-main-numerator grob-moment) 0))
                   (grob-measure (+ grob-beat 1)))
-             (ly:message "KEY SIGNATURE GROB: measure=~a, non-default=~a, courtesy=~a, line-start=~a" grob-measure non-default courtesy is-line-start)
+             (ly:message "KEY SIGNATURE GROB: measure=~a, non-default=~a, courtesy=~a, line-start=~a, pending=~a" grob-measure non-default courtesy is-line-start pending-key-changes)
              (if (not first-key-sig)
+                 ;; Color key signatures that are at line starts AND there are pending key changes
                  (if (and is-line-start pending-key-changes)
                      (begin
-                       (ly:message "COLORING KEY SIGNATURE at measure ~a: line-start=~a" grob-measure is-line-start)
+                       (ly:message "FOUND NEXT BREAK at measure ~a: line-start=~a (coloring for key changes at measures: ~a)" grob-measure is-line-start key-change-measures)
                        (ly:grob-set-property! grob 'color red)
-                       (set! pending-key-changes #f))))
+                       (set! pending-key-changes #f)
+                       (set! key-change-measures '()))
+                     ;; Log when we have pending key changes but this grob is not at a line start
+                     (if pending-key-changes
+                         (ly:message "Key signature at measure ~a is NOT at line start (line-start=~a) - still looking for next break after measures: ~a" grob-measure is-line-start key-change-measures))))
              (set! first-key-sig #f)))))))))
