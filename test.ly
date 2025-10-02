@@ -18,7 +18,6 @@ ekmFont = "Bravura"
 \include "utils/layout/spacing.ly"
 \include "utils/layout/score-layout.ly"
 
-
 \include "utils/header-template.ly"
 
 % Test the key change line start callback function
@@ -581,9 +580,9 @@ s1*3
         s1 | 
         cs4:m7 a4 cs4:m7 s16 f8:dim7 fs16:m9 | % 71
         fs4:m9 s4 s4 s8. b16:sus13 | % 72
-        s4 s4 s4. c8:5 | % 73
+        s4 s4 s4. c8 | % 73
         s4. c8:6 s4. c8:7 | % 74
-        s4. c8:5 s4 s4 |
+        s4. c8 s4 s4 |
 
         \barNumberCheck #75 %CH 3
         s1 | % 76
