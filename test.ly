@@ -6,6 +6,7 @@ ekmFont = "Bravura"
 \include "english.ly"
 \include "utils/fonts.ly"
 \include "utils/chord-display.ly"
+\include "utils/key-changes.ly"
 \include "utils/paper-setup.ly"
 \include "utils/capsules/measure-position-detection.ly"
 \include "utils/capsules/capsule-utils.ly"
@@ -119,13 +120,13 @@ rhythmContent = {
 
     \barNumberCheck #3 %INTRO
     s4  s4 s4 d8.  d16 | % 4
-     s4  s4  d8. d16 ~ d8 d8 |
+     s4  s4  d8.  d16 ~ d8 d8 |
   s1*3
        s4  s4 
-         d8. -> d16 -> d8 d8 ~ -> | % 9
+         d8. -> d16 -> d8 ~ d8 ~ -> | % 9
 
-   d4. d8 ~ d2 | \barNumberCheck #10
-   d16 d16 r8 r8 d16 d16 r4 d4 | % 11
+   d4.  d8 ~ d2 | \barNumberCheck #10
+   d16 -> d16 -> r8 r8 d16 -> d16 -> r4 d4 | % 11
    
    \barNumberCheck #11 %VS 1
    s1  | % 12
@@ -143,7 +144,7 @@ rhythmContent = {
    s1  | % 24
    s1  | % 25
    s1  | % 26
-   8 s8 s2. | % 27
+   8 -> s8 s2. | % 27
    
    \barNumberCheck #27 %CH 1
    s1  | % 28
@@ -171,15 +172,15 @@ rhythmContent = {
    s1  | % 48
    s1  | % 49
    s1  | \barNumberCheck #50
-   d8 8 8 8 8 8 r8. f16 | % 51 MELODY NOTE HERE THAT HAS TO BE FIXED
+   d8-> 8-> 8-> 8-> 8-> 8->  r8. 16 | % 51 MELODY NOTE HERE THAT HAS TO BE FIXED
    
    \barNumberCheck #51 %CH 2
    s1 | % 52
    s1 | % 53
-   s1   | % 54
+   s2. d8. s16   | % 54
    s1 | %melody here % 55
    s1  | % 56
-   s2.  d8. 16 | % 57
+   s2.  d8. 16-> | % 57
    s1  | % 58
    s1 | %melody here % 59
    
@@ -187,11 +188,11 @@ rhythmContent = {
    s2. df8. 16 | % 60
    s2. 8. 16 | % 61
    s2. 8. 16 | % 62
-   s2. 8. 16 | % 63
+   s4 s4 4 -> 8.-> 16-> | % 63
    s2. 8. 16 | % 64
-   s2 8. 16 ~ 8 8 | % 65
+   s2 8. 16 ~ 8 8-> | % 65
    s1  | % 66
-   s2  16 16 16 r16 r8. 16 | % 67
+   s2  16 -> 16 -> 16 -> r16 r8. 16-> | % 67
    
    \barNumberCheck #67 %GTR
     s2. d8. 16 | % 68
@@ -199,19 +200,19 @@ rhythmContent = {
    s1  | \barNumberCheck #70
    s1 | %melody here % 71
    s2. 8. 16 | % 72
-   s2 4. df8 ~ | % 73
-   df4. 8 ~ 4. 8 ~ | % 74
+   s2 4. df8-> ~ | % 73
+   df4. 8-> ~ 4. 8-> ~ | % 74
    4. 8 s2 | % 75
    
    \barNumberCheck #75 %CH 3
    R1 | % 76
-   r4 s2 r8 8 ~ | % 77
+   r4 s2 r8 8-> ~ | % 77
    %r4 bf4 cf8 df8 r8 d8 ~ | % 77
-   4. 8 ~ 4. 8 ~ | % 78
+   4. 8-> ~ 4. 8-> ~ | % 78
    4 s2 r8 8 ~ | % 79
    %4 4 f8 gf8 r8 d8 ~ | % 79
-   4 s4 4. 8 ~ | \barNumberCheck #80
-   4. 8 ~ 2 | % 81
+   4 s4 4. 8-> ~ | \barNumberCheck #80
+   4. 8-> ~ 2 | % 81
    4. 8 ~ 4. 8 ~ | % 82
    4 s2. | % 83
    
@@ -219,7 +220,7 @@ rhythmContent = {
    s1  | % 84
    s1  | % 85
    s1  | % 86
-   s2 8 ~ 4 8 | % 87
+   s2 8-> ~ 4 8-> | % 87
    s1  | % 88
    s1  | % 89
    s1  | \barNumberCheck #90
@@ -227,9 +228,9 @@ rhythmContent = {
    
    \barNumberCheck #91 %OUTRO
    s1  | % 92
-   s2 8. 16 ~ 8 8 | % 93
+   s2 8.-> 16-> ~ 8 8-> | % 93
    s1  | % 94
-   s2 8. 16 ~ 8 8 | % 95
+   s2 8.-> 16-> ~ 8 8-> | % 95
    s1  | % 96
    s2 4. 8 | % 97
   }
@@ -246,7 +247,8 @@ slashContent = {
 
     \barNumberCheck #3 %INTRO
     d4  4 4 s8.  s16 | % 4
-     4  4  s8. s16 ~ s8 s8 |
+     4  4  s4 s4  |
+    
      4 4 4 4 4 4 4 4 4 4 4 4
 
        d4  d4 
@@ -315,10 +317,10 @@ slashContent = {
    d4 4 4 s4 | % 60
    d4 4 4 s4 | % 61
    d4 4 4 s4 | % 62
-   d4 4 4 s4 | % 63
+   d4 4 s4 s4 | % 63
    d4 4 4 s4 | % 64
    d4 4 s2| % 65
-   d4 4 4 4 | % 66
+   d4-> 4 4 4 | % 66
    4 4 s2| % 67
    
    \barNumberCheck #67 %GTR
@@ -389,7 +391,10 @@ melodyContent = {
   \barNumberCheck #30 %CH 1 Melody
   g4 fs4 g4 a4 | % 31
   
-  s1*7
+  s1*3
+  g4 fs4 g4 a4 | % 35
+
+  s1*3
   
   \barNumberCheck #38 %VS 2 Melody
   g4 fs4 g4 bf4 | % 39
@@ -410,9 +415,13 @@ melodyContent = {
   s2. s8.  g16~ | % 54
   \barNumberCheck #54 %CH 2 Melody
   g4 fs4 g8.  a16 ~  a8 a8  | % 55
+
+s1*3
   
-  s1*15
   
+  g4 fs4 g4 a4 | % 55
+
+  s1*11
   \barNumberCheck #70 %GTR Melody
   f4 g4 a4 r16 c8 [ c16 ] | % 71
 
@@ -442,9 +451,9 @@ melodyContent = {
         d4:sus13 s2 d4:sus13 | % 6
         s2 cs4:sus13 s4 | % 7
         c1:sus13    | % 8
-        s4 c4:sus13 s8. f16:sus13 s8 as8:maj7 | % 9
-        s4. df8:5 s2 | 
-        c16:sus13 s16 s8 s8 s16 s16 s4 gf4:dim7 | 
+        s4 c4:sus13 s8. d16:sus13 s8 g:maj7 | % 9
+        s4. df8 s2 | 
+        c16:sus13 s16 s8 s8 s16 s16 s4 f4:dim7 | 
         
         \barNumberCheck #11 %VS 1
         fs4:m9 s2. | % 12
@@ -564,13 +573,18 @@ melodyContent = {
     \set chordRootNamer = #musejazz-chord-name->markup
     \override ChordName.font-size = #3
     \override ChordName.font-name = #"MuseJazz Text"
+    \override ChordName.extra-offset = #'(0 . 1)
     \chordProgression
     }
 
 
-  \new Staff \transpose c c' { 
+  \new Staff \with {
+    \consists #key-change-tracker-engraver
+  } \transpose c c' { 
     \global
     \set Staff.printKeyCancellation = ##f
+    \override Score.Script.font-size = #4
+    \override Score.Script.color = #red
     
     <<
       \clef bass
