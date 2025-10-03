@@ -23,7 +23,7 @@ fn print_detailed_success_with_semitones(message: &str, chord: &ChordName, semit
     
     println!("{} {}", "✓".green().bold(), message);
     println!("  Semitone Sequence: {}", semitones.iter().map(|s| s.to_string()).collect::<Vec<_>>().join(" ").bright_white());
-    println!("  Note Names: {}", sequence.get_note_names().join(" ").bright_cyan());
+    println!("  Note Names: {}", sequence.get_note_names_interval_based().join(" ").bright_cyan());
     println!("  Root Intervals: {}", sequence.get_root_intervals().join(" ").bright_yellow());
     if sequence.get_stacked_intervals().len() > 0 {
         println!("  Stacked Intervals: {}", sequence.get_stacked_intervals().join(" ").bright_magenta());

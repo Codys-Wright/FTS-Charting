@@ -575,6 +575,7 @@ pub enum ChordQuality {
     Minor(MinorSeventh),
     Diminished,
     Augmented,
+    Suspended(MajorSeventh),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -606,6 +607,11 @@ impl NamingLevels for ChordQuality {
             },
             ChordQuality::Diminished => "dim".to_string(),
             ChordQuality::Augmented => "aug".to_string(),
+            ChordQuality::Suspended(seventh) => match seventh {
+                MajorSeventh::None => "sus".to_string(),
+                MajorSeventh::Major7 => "maj7sus".to_string(),
+                MajorSeventh::Dominant7 => "7sus".to_string(),
+            },
         }
     }
     
@@ -623,6 +629,11 @@ impl NamingLevels for ChordQuality {
             },
             ChordQuality::Diminished => "diminished".to_string(),
             ChordQuality::Augmented => "augmented".to_string(),
+            ChordQuality::Suspended(seventh) => match seventh {
+                MajorSeventh::None => "suspended".to_string(),
+                MajorSeventh::Major7 => "suspended/major7".to_string(),
+                MajorSeventh::Dominant7 => "suspended/dominant7".to_string(),
+            },
         }
     }
     
@@ -640,6 +651,11 @@ impl NamingLevels for ChordQuality {
             },
             ChordQuality::Diminished => "dim".to_string(),
             ChordQuality::Augmented => "aug".to_string(),
+            ChordQuality::Suspended(seventh) => match seventh {
+                MajorSeventh::None => "sus".to_string(),
+                MajorSeventh::Major7 => "maj7sus".to_string(),
+                MajorSeventh::Dominant7 => "7sus".to_string(),
+            },
         }
     }
     
@@ -657,6 +673,11 @@ impl NamingLevels for ChordQuality {
             },
             ChordQuality::Diminished => "dim".to_string(),
             ChordQuality::Augmented => "aug".to_string(),
+            ChordQuality::Suspended(seventh) => match seventh {
+                MajorSeventh::None => "sus".to_string(),
+                MajorSeventh::Major7 => "maj7sus".to_string(),
+                MajorSeventh::Dominant7 => "7sus".to_string(),
+            },
         }
     }
     
@@ -674,6 +695,11 @@ impl NamingLevels for ChordQuality {
             },
             ChordQuality::Diminished => "dim".to_string(),
             ChordQuality::Augmented => "aug".to_string(),
+            ChordQuality::Suspended(seventh) => match seventh {
+                MajorSeventh::None => "sus".to_string(),
+                MajorSeventh::Major7 => "maj7sus".to_string(),
+                MajorSeventh::Dominant7 => "7sus".to_string(),
+            },
         }
     }
 }
@@ -897,6 +923,7 @@ impl ChordName {
             ChordQuality::Minor(seventh) => !matches!(seventh, MinorSeventh::None),
             ChordQuality::Diminished => false, // Basic diminished is triad
             ChordQuality::Augmented => false,  // Basic augmented is triad
+            ChordQuality::Suspended(seventh) => !matches!(seventh, MajorSeventh::None),
         }
     }
     
@@ -978,13 +1005,23 @@ impl ChordName {
         
         // Don't handle suspended chords here - we'll add them at the end
         
-        // Handle 6th chords - if we have 6th addition and no 7th, use "6" or "6/9" instead of "maj"
+        // Handle 6th chords - if we have 6th addition and no 7th, use "6" or "6/9" instead of base quality
         if self.additions.contains(&"6".to_string()) && !self.quality_has_seventh() {
-            // Check if we also have 9th extension for 6/9 chord
-            if self.extensions.contains(&Extension::Ninth) {
-                name = name.replace("maj", "6/9");
+            // Check if we also have 9th addition for 6/9 chord
+            if self.additions.contains(&"9".to_string()) {
+                // For 6/9 chords, replace the base quality with "6/9"
+                if name == "maj" {
+                    name = "6/9".to_string();
+                } else if name == "m" {
+                    name = "m6/9".to_string();
+                }
             } else {
-                name = name.replace("maj", "6");
+                // For 6th chords, replace the base quality with "6"
+                if name == "maj" {
+                    name = "6".to_string();
+                } else if name == "m" {
+                    name = "m6".to_string();
+                }
             }
         }
         
@@ -993,7 +1030,7 @@ impl ChordName {
             // Skip 9th if we already handled it in 6/9 chord naming
             let is_6_9_chord = self.additions.contains(&"6".to_string()) && 
                               !self.quality_has_seventh() && 
-                              self.extensions.contains(&Extension::Ninth);
+                              self.additions.contains(&"9".to_string());
             
             if !is_6_9_chord {
                 let highest_extension = self.get_highest_extension();
@@ -1018,9 +1055,12 @@ impl ChordName {
             name.push_str(&format!("{}", alt));
         }
         
-        // Add additions (but skip "6" if we already converted to "maj6", and skip sus2/sus4 if we converted the base name)
+        // Add additions (but skip "6" and "9" if we already converted to "6" or "6/9" chord, and skip sus2/sus4 if we converted the base name)
         for add in &self.additions {
-            if add != "6" || self.quality_has_seventh() {
+            let is_6_chord = self.additions.contains(&"6".to_string()) && !self.quality_has_seventh();
+            let is_6_9_chord = is_6_chord && self.additions.contains(&"9".to_string());
+            
+            if (add != "6" && add != "9") || !is_6_chord || self.quality_has_seventh() {
                 if !self.is_suspended() || (add != "sus2" && add != "sus4") {
                     // Use "add" prefix for additions to chords that already have extensions
                     if !self.extensions.is_empty() || self.quality_has_seventh() {

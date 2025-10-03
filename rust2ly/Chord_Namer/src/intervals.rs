@@ -16,13 +16,17 @@ pub enum IntervalNumber {
     Second,     // 2
     Third,      // 3
     Fourth,     // 4
+    Tritone,    // 6 semitones (augmented 4th/diminished 5th)
     Fifth,      // 5
     Sixth,      // 6
     Seventh,    // 7
     Octave,     // 8
     Ninth,      // 9
+    Tenth,      // 10
     Eleventh,   // 11
+    Twelfth,    // 12
     Thirteenth, // 13
+    Fourteenth, // 14
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -61,13 +65,17 @@ impl fmt::Display for IntervalNumber {
             IntervalNumber::Second => write!(f, "2"),
             IntervalNumber::Third => write!(f, "3"),
             IntervalNumber::Fourth => write!(f, "4"),
+            IntervalNumber::Tritone => write!(f, "Tritone"),
             IntervalNumber::Fifth => write!(f, "5"),
             IntervalNumber::Sixth => write!(f, "6"),
             IntervalNumber::Seventh => write!(f, "7"),
             IntervalNumber::Octave => write!(f, "8"),
             IntervalNumber::Ninth => write!(f, "9"),
+            IntervalNumber::Tenth => write!(f, "10"),
             IntervalNumber::Eleventh => write!(f, "11"),
+            IntervalNumber::Twelfth => write!(f, "12"),
             IntervalNumber::Thirteenth => write!(f, "13"),
+            IntervalNumber::Fourteenth => write!(f, "14"),
         }
     }
 }
@@ -100,22 +108,28 @@ impl Interval {
             IntervalNumber::Second => "2nd",
             IntervalNumber::Third => "3rd",
             IntervalNumber::Fourth => "4th",
+            IntervalNumber::Tritone => "Tritone",
             IntervalNumber::Fifth => "5th",
             IntervalNumber::Sixth => "6th",
             IntervalNumber::Seventh => "7th",
             IntervalNumber::Octave => "8th",
             IntervalNumber::Ninth => "9th",
+            IntervalNumber::Tenth => "10th",
             IntervalNumber::Eleventh => "11th",
+            IntervalNumber::Twelfth => "12th",
             IntervalNumber::Thirteenth => "13th",
+            IntervalNumber::Fourteenth => "14th",
         };
         
-        if self.octaves_up > 0 {
+        if self.octaves_up > 1 {
+            // Only show octave count for intervals more than one octave up
             format!("{}{} (+{} octave{})", 
                    quality_symbol, 
                    number_symbol, 
                    self.octaves_up,
                    if self.octaves_up == 1 { "" } else { "s" })
         } else {
+            // For 0 or 1 octave up, just show the interval name (9th, 11th, 13th are already compound)
             format!("{}{}", quality_symbol, number_symbol)
         }
     }
@@ -173,7 +187,7 @@ pub fn semitones_to_base_interval(semitones: u32) -> Option<Interval> {
         3 => Some((IntervalQuality::Minor, IntervalNumber::Third)),
         4 => Some((IntervalQuality::Major, IntervalNumber::Third)),
         5 => Some((IntervalQuality::Perfect, IntervalNumber::Fourth)),
-        6 => Some((IntervalQuality::Perfect, IntervalNumber::Fourth)), // Tritone (A4/d5)
+        6 => Some((IntervalQuality::Perfect, IntervalNumber::Tritone)), // Tritone (A4/d5)
         7 => Some((IntervalQuality::Perfect, IntervalNumber::Fifth)),
         8 => Some((IntervalQuality::Minor, IntervalNumber::Sixth)),
         9 => Some((IntervalQuality::Major, IntervalNumber::Sixth)),
@@ -199,20 +213,20 @@ pub fn semitones_to_compound_interval(semitones: u32) -> Option<Interval> {
         // Within first octave, use base intervals
         semitones_to_base_interval(semitones)
     } else if octaves_up == 1 {
-        // For first compound interval, map to proper compound interval numbers
+        // For first compound interval, use specific compound names for 9th-14th
         let compound_interval = match base_semitones {
-            0 => Some((IntervalQuality::Perfect, IntervalNumber::Ninth)), // P9
+            0 => Some((IntervalQuality::Perfect, IntervalNumber::Octave)), // P8 (octave)
             1 => Some((IntervalQuality::Minor, IntervalNumber::Ninth)), // m9
             2 => Some((IntervalQuality::Major, IntervalNumber::Ninth)), // M9
-            3 => Some((IntervalQuality::Minor, IntervalNumber::Third)), // m3 (1 octave up)
-            4 => Some((IntervalQuality::Major, IntervalNumber::Third)), // M3 (1 octave up)
+            3 => Some((IntervalQuality::Minor, IntervalNumber::Tenth)), // m10
+            4 => Some((IntervalQuality::Major, IntervalNumber::Tenth)), // M10
             5 => Some((IntervalQuality::Perfect, IntervalNumber::Eleventh)), // P11
-            6 => Some((IntervalQuality::Perfect, IntervalNumber::Fourth)), // P4 (1 octave up)
-            7 => Some((IntervalQuality::Perfect, IntervalNumber::Fifth)), // P5 (1 octave up)
+            6 => Some((IntervalQuality::Perfect, IntervalNumber::Eleventh)), // P11 (but this is actually #11)
+            7 => Some((IntervalQuality::Perfect, IntervalNumber::Twelfth)), // P12 (same as 6)
             8 => Some((IntervalQuality::Minor, IntervalNumber::Thirteenth)), // m13
             9 => Some((IntervalQuality::Major, IntervalNumber::Thirteenth)), // M13
-            10 => Some((IntervalQuality::Minor, IntervalNumber::Seventh)), // m7 (1 octave up)
-            11 => Some((IntervalQuality::Major, IntervalNumber::Seventh)), // M7 (1 octave up)
+            10 => Some((IntervalQuality::Minor, IntervalNumber::Fourteenth)), // m14
+            11 => Some((IntervalQuality::Major, IntervalNumber::Fourteenth)), // M14
             _ => None,
         };
         
