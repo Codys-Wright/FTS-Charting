@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../reference/esmuflily"
+		},
+		{
+			"path": "../../../.config/REAPER/Scripts/FTC Tools"
 		}
 	],
 	"settings": {}

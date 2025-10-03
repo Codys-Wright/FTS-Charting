@@ -1,0 +1,10 @@
+[workspace]
+members = ["Chord_Namer",
+    "lilypond-rs",
+    "main"
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"

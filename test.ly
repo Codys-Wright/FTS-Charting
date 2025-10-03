@@ -547,11 +547,11 @@ melodyContent = {
         fs4:m9 s2 s8. b16:sus13 | % 4
         s2 b8.:sus13 c16:sus13 s8 cs8:sus13 | % 5
         d4:sus13 s2 d4:sus13 | % 6
-        s2 cs4:sus13 s4 | % 7
-        c1:sus13    | % 8
-        s4 c4:sus13 s8. d16:sus13 s8 g:maj7 | % 9
-        s4. df8 s2 | 
-        c16:sus13 s16 s8 s8 s16 s16 s4 f4:dim7 | 
+        s2 c4:sus13 s4 | % 7
+        b1:sus13    | % 8
+        s4 b4:sus13 s8. d16:sus13 s8 g:maj7 | % 9
+        s4. c8 s2 | 
+        b16:sus13 s16 s8 s8 s16 s16 s4 f4:dim7 | 
         
         \barNumberCheck #11 %VS 1
         fs4:m9 s2. | % 12
@@ -667,7 +667,7 @@ melodyContent = {
 \score {
   <<
    \new ChordNames = "chordProgression" {
-    \set chordChanges = ##t 
+    \set chordChanges = ##t
     \set chordNameExceptions = #chordExceptions
     \set chordRootNamer = #musejazz-chord-name->markup
     \override ChordName.font-size = #3

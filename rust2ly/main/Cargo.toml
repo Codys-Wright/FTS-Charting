@@ -1,0 +1,7 @@
+[package]
+name = "main"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+lilypond = { path = "../lilypond-rs" }

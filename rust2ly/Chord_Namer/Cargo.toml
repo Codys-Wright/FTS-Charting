@@ -1,0 +1,10 @@
+[package]
+name = "chord-namer"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "chord_namer"
+
+[dependencies]
+colored = "2.0"
