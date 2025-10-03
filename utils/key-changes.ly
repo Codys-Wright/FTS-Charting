@@ -233,7 +233,6 @@ colorTimeChange = {
                             (ly:moment-main-numerator current-moment) 0))
               (grob-measure (+ grob-beat 1))
               (should-color (member grob-measure coloring-measures)))
-         (ly:message "KEY SIGNATURE GROB: measure=~a, non-default=~a, courtesy=~a, should-color=~a" grob-measure non-default courtesy should-color)
          (if (not first-key-sig)
              (if should-color
                  (begin

@@ -203,21 +203,7 @@ allNotes = {
 
 
 
-% 4 slash marks pattern
-slashMarks = {
-  \once \override NoteHead.style = #'slash 
-  \once \override Stem.stencil = ##f
-  d4
-  \once \override NoteHead.style = #'slash 
-  \once \override Stem.stencil = ##f
-  d4 
-  \once \override NoteHead.style = #'slash 
-  \once \override Stem.stencil = ##f
-  d4 
-  \once \override NoteHead.style = #'slash 
-  \once \override Stem.stencil = ##f
-  d4
-}
+
 
 
 
