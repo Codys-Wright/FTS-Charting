@@ -1,3 +1,6 @@
 [submodule "utils/third-party/esmuflily"]
 	path = utils/third-party/esmuflily
 	url = git@github.com:tr-igem/esmuflily.git
+[submodule "rust2ly/lilypond-rs"]
+	path = rust2ly/lilypond-rs
+	url = git@github.com:jaredforth/lilypond-rs.git
