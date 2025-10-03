@@ -7,6 +7,7 @@ ekmFont = "Bravura"
 \include "utils/fonts.ly"
 \include "utils/chord-display.ly"
 \include "utils/key-changes.ly"
+\include "utils/note-placement.ly"
 \include "utils/paper-setup.ly"
 \include "utils/capsules/measure-position-detection.ly"
 \include "utils/capsules/capsule-utils.ly"
@@ -139,6 +140,66 @@ combinedBreaks = \autoBreaksAndPseudoIndents \marks
 
 % Global settings including key signature
 global = { \time 4/4  }
+
+% Text cues for all notes - just list measure and text!
+allNotesCues = \textCuesAtMeasures #'(
+  (27 . "Intro Groove!")
+  (76 . "Band Hits!")
+  (79 . "Back to Groove")
+  (83 . "8th note vamp")
+  (96 . "Last Hit (Just Drums and Vocals)")
+) #(rgb-color 0.898 0.129 0.0)
+
+% Text cues for drum notes with beat positioning support
+% Format: (measure . (beat . "text")) or (measure . "text") for beat 0
+drumNotesCues = \textCuesAtMeasures #'(
+  (1 . "Drum Intro!")
+  (9 . "Fill!")
+  (34 . "BIG FILL!")
+  (35 . "Back to Heavy Swing")
+  (58 . "BIG FILL!")
+  (77 . "BIG TOMS")
+  (81 . "HUGE FILL")
+  (96 . "Fill")
+) #(rgb-color 1.0 0.471 0.0)
+
+bassNotesCues = \textCuesAtMeasures #'(
+  (75 . "Bass Walkdown")
+) #(rgb-color 0.569 0.255 0.675)
+
+guitarNotesCues = \textCuesAtMeasures #'(
+  (67 . "GTR SOLO")
+  (75 . "Gtr Riffs")
+  (83 . "Funkkk")
+) #(rgb-color 0.208 0.518 0.894)
+
+keysNotesCues = \textCuesAtMeasures #'(
+  (3 . "Synth Melody")
+  (5 . "Arps!")
+  (19 . "Trem Effect!")
+  (27 . "Synth Melody")
+  (37 . "Clav!")
+  (41 . "Clav!")
+  (45 . "Clav!")
+  (59 . "Synth Solo")
+  (73 . "Synth Walkup")
+  (83 . "Organ Rhodes")
+
+) #(rgb-color 0.149 0.635 0.412)
+
+% Note content variables for different instruments
+allNotes = {
+  <<
+  % Use the text cues function - it handles all spacing and color automatically!
+  \allNotesCues
+  \drumNotesCues
+  \bassNotesCues
+  \guitarNotesCues
+  \keysNotesCues
+  >>
+}
+
+
 
 
 
@@ -467,7 +528,7 @@ melodyContent = {
   \barNumberCheck #54 %CH 2 Melody
   g4 fs4 g8.  a16 ~  a8 a8  | % 55
 
-s1*3
+   s1*3
   
   
   g4 fs4 g4 a4 | % 55
@@ -478,7 +539,7 @@ s1*3
 
   s1*5
   \barNumberCheck #76 %GTR Melody
-   s4 bf,4 cf8 df8 s8 s8  | % 77
+   s4 bf,4-> cf8-> df8-> s8 s8  | % 77
 
   s1
 
@@ -616,14 +677,6 @@ s1*3
 
 
 
-% Test the key change callback function
-#(test-key-change-callback)
-
-% Test the new key change handling functions
-#(test-key-change-handling)
-
-% Test the new music functions
-#(test-music-functions)
 
 \score {
   <<
@@ -633,7 +686,7 @@ s1*3
     \set chordRootNamer = #musejazz-chord-name->markup
     \override ChordName.font-size = #3
     \override ChordName.font-name = #"MuseJazz Text"
-    \override ChordName.extra-offset = #'(0 . 1)
+    \override VerticalAxisGroup.nonstaff-relatedstaff-spacing.padding = #0.9
     \chordProgression
     }
 
@@ -643,9 +696,8 @@ s1*3
   } \transpose c c' { 
     \global
     \set Staff.printKeyCancellation = ##f
-    \override Score.Script.font-size = #4
+    \override Score.Script.font-size = #2
     \override Score.Script.color = #red
-    
     <<
       \clef bass
       \keys
@@ -653,6 +705,8 @@ s1*3
     \new Voice { \rhythmContent }
     \new Voice { \melodyContent }
     \new Voice { \slashContent }
+    \new Voice { \allNotes }
+    
     \combinedBreaks
       % \repeat unfold 92 { \slashMarks }
      
