@@ -1,3 +1,34 @@
-# Reference materials
-reference/
-extending-lilypond.gitlab.io/
+# Rust build artifacts
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# LilyPond output files
+*.pdf
+*.ps
+*.png
+*.midi
+*.mid
+
+# Temporary files
+*.tmp
+*.temp
+lilypond-tmp-*.pdf
+
+# Log files
+*.log
+
+# Backup files
+*.bak
+*.backup
