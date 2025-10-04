@@ -179,7 +179,7 @@ fn test_minor_chords() {
         &[0, 3, 5, 7, 10],
         &ChordName {
             quality: ChordQuality::Minor(MinorSeventh::Minor7),
-            extensions: vec![Extension::Ninth, Extension::Eleventh],
+            extensions: vec![Extension::Eleventh],
             alterations: vec![],
             omitted: vec![OmittedInterval::Ninth],
             additions: vec![],
@@ -218,7 +218,7 @@ fn test_minor_chords() {
         &[0, 3, 5, 7, 9, 10],
         &ChordName {
             quality: ChordQuality::Minor(MinorSeventh::Minor7),
-            extensions: vec![Extension::Ninth, Extension::Eleventh, Extension::Thirteenth],
+            extensions: vec![Extension::Eleventh, Extension::Thirteenth],
             alterations: vec![],
             omitted: vec![OmittedInterval::Ninth],
             additions: vec![],
