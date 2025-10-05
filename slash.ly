@@ -36,25 +36,32 @@ detectClef = #(define-music-function () ()
 
 middleLineNote = #(define-music-function (music) (ly:music?)
   "Apply clef-aware pitch to rhythm notes"
-  #{
-    \applyContext #(lambda (context)
-      (let ((clefGlyph (ly:context-property context 'clefGlyph)))
-        (ly:message "Applying clef-aware pitch: ~s" clefGlyph)
-        (let ((pitch (cond
-                      ((string=? clefGlyph "clefs.G")
-                       (ly:message "Using B for treble clef")
-                       (ly:make-pitch 0 6 0))
-                      ((string=? clefGlyph "clefs.F")
-                       (ly:message "Using D for bass clef")
-                       (ly:make-pitch -1 1 0))
-                      (else
-                       (ly:message "Using C for unknown clef")
-                       (ly:make-pitch 0 0 0)))))
-          (ly:context-set-property! context 'middleCPosition 0)
-          (ly:context-set-property! context 'clefGlyph "clefs.G")
-          (ly:context-set-property! context 'clefPosition 0))))
-    #music
-  #})
+  (let ((pitch-set #f))
+    #{
+      \applyContext #(lambda (context)
+        (let* ((clefGlyph (ly:context-property context 'clefGlyph))
+               (target-pitch (cond
+                              ((string=? clefGlyph "clefs.G")
+                               (ly:message "Using B for treble clef")
+                               (ly:make-pitch 0 6 0))
+                              ((string=? clefGlyph "clefs.F")
+                               (ly:message "Using D for bass clef")
+                               (ly:make-pitch -1 1 0))
+                              (else
+                               (ly:message "Using C for unknown clef")
+                               (ly:make-pitch 0 0 0)))))
+          (ly:message "Applying clef-aware pitch: ~s, target: ~s" clefGlyph target-pitch)
+          ; Set the pitch on all note events in the music
+          (music-map (lambda (m)
+                      (if (music-is-of-type? m 'note-event)
+                          (begin
+                            (ly:music-set-property! m 'pitch target-pitch)
+                            (ly:message "Set note pitch to: ~s" target-pitch)
+                            m)
+                          m))
+                    music)))
+      #music
+    #}))
 
 % Define custom notehead styles
 #(define-public diamond-slash-style
@@ -87,7 +94,10 @@ middleLineNote = #(define-music-function (music) (ly:music?)
             (if (or (<= duration-log -1) (= duration-log 0) (= duration-log 1))
                 (begin
                   (ly:grob-set-property! stem 'Y-offset 0.4)  ; diamond slash noteheads
-                  (ly:grob-set-property! stem 'neutral-direction down))
+                  (ly:grob-set-property! stem 'neutral-direction down)
+                  ; Extend stem length for half notes
+                  (if (= duration-log 1)
+                      (ly:grob-set-property! stem 'length 7.0)))
                 (begin
                   (ly:grob-set-property! stem 'Y-offset -0.7)  ; regular slash noteheads
                   (ly:grob-set-property! stem 'neutral-direction DOWN))))))
@@ -135,48 +145,76 @@ middleLineNote = #(define-music-function (music) (ly:music?)
 #(define (analyze-quarter-notes music)
   (set! current-bar-notes (list))
   (set! note-counter 0)
-  (music-map (lambda (m)
-             (cond
-              ((music-is-of-type? m 'note-event)
-               (let* ((duration (ly:music-property m 'duration))
-                      (duration-log (ly:duration-log duration))
-                      (dots (ly:duration-dot-count duration))
-                      (is-quarter (and (= duration-log 2) (= dots 0))))
-                 ; Store note info with reference to music object
-                 (set! current-bar-notes (append current-bar-notes (list (list m duration-log dots is-quarter))))
-                 (ly:message "Note: duration-log=~s, dots=~s, is-quarter=~s" duration-log dots is-quarter)
-                 m))
-              ((eq? (ly:music-property m 'name) 'BarCheck)
-               (ly:message "BAR CHECK EVENT detected")
-               (ly:message "Bar has ~s notes" (length current-bar-notes))
-               ; Process this bar to mark consecutive quarter notes as stemless
-               (let ((consecutive-quarters (list)))
-                 (for-each (lambda (note-info)
-                            (let ((music-obj (car note-info))
-                                  (duration-log (cadr note-info))
-                                  (dots (caddr note-info))
-                                  (is-quarter (cadddr note-info)))
-                              (if is-quarter
-                                  (set! consecutive-quarters (append consecutive-quarters (list music-obj)))
-                                  (begin
-                                    ; End of consecutive quarters, mark them if 2 or more
-                                    (if (>= (length consecutive-quarters) 2)
-                                        (for-each (lambda (m) 
-                                                   (ly:music-set-property! m 'stemless #t)
-                                                   (ly:message "Marking note as stemless"))
-                                                 consecutive-quarters))
-                                    (set! consecutive-quarters (list))))))
-                          current-bar-notes)
-                 ; Process any remaining consecutive quarters at end of bar
-                 (if (>= (length consecutive-quarters) 2)
-                     (for-each (lambda (m) 
-                                (ly:music-set-property! m 'stemless #t)
-                                (ly:message "Marking note as stemless (end of bar)"))
-                              consecutive-quarters)))
-               (set! current-bar-notes (list))
-               m)
-              (else m)))
-           music))
+  (let ((result (music-map (lambda (m)
+                            (cond
+                             ((music-is-of-type? m 'note-event)
+                              (let* ((duration (ly:music-property m 'duration))
+                                     (duration-log (ly:duration-log duration))
+                                     (dots (ly:duration-dot-count duration))
+                                     (is-quarter (and (= duration-log 2) (= dots 0))))
+                                ; Store note info with reference to music object
+                                (set! current-bar-notes (append current-bar-notes (list (list m duration-log dots is-quarter))))
+                                (ly:message "Note: duration-log=~s, dots=~s, is-quarter=~s" duration-log dots is-quarter)
+                                m))
+                             ((eq? (ly:music-property m 'name) 'BarCheck)
+                              (ly:message "BAR CHECK EVENT detected")
+                              (ly:message "Bar has ~s notes" (length current-bar-notes))
+                              ; Process this bar to mark consecutive quarter notes as stemless
+                              (let ((consecutive-quarters (list)))
+                                (for-each (lambda (note-info)
+                                           (let ((music-obj (car note-info))
+                                                 (duration-log (cadr note-info))
+                                                 (dots (caddr note-info))
+                                                 (is-quarter (cadddr note-info)))
+                                             (if is-quarter
+                                                 (set! consecutive-quarters (append consecutive-quarters (list music-obj)))
+                                                 (begin
+                                                   ; End of consecutive quarters, mark them if 2 or more
+                                                   (if (>= (length consecutive-quarters) 2)
+                                                       (for-each (lambda (m) 
+                                                                  (ly:music-set-property! m 'stemless #t)
+                                                                  (ly:message "Marking note as stemless"))
+                                                                consecutive-quarters))
+                                                   (set! consecutive-quarters (list))))))
+                                         current-bar-notes)
+                                ; Process any remaining consecutive quarters at end of bar
+                                (if (>= (length consecutive-quarters) 2)
+                                    (for-each (lambda (m) 
+                                               (ly:music-set-property! m 'stemless #t)
+                                               (ly:message "Marking note as stemless (end of bar)"))
+                                             consecutive-quarters)))
+                              (set! current-bar-notes (list))
+                              m)
+                             (else m)))
+                          music)))
+    ; Process any remaining notes after all music (final bar without bar check)
+    (if (> (length current-bar-notes) 0)
+        (begin
+          (ly:message "Processing final bar with ~s notes" (length current-bar-notes))
+          (let ((consecutive-quarters (list)))
+            (for-each (lambda (note-info)
+                       (let ((music-obj (car note-info))
+                             (duration-log (cadr note-info))
+                             (dots (caddr note-info))
+                             (is-quarter (cadddr note-info)))
+                         (if is-quarter
+                             (set! consecutive-quarters (append consecutive-quarters (list music-obj)))
+                             (begin
+                               ; End of consecutive quarters, mark them if 2 or more
+                               (if (>= (length consecutive-quarters) 2)
+                                   (for-each (lambda (m) 
+                                              (ly:music-set-property! m 'stemless #t)
+                                              (ly:message "Marking note as stemless (final bar)"))
+                                            consecutive-quarters))
+                               (set! consecutive-quarters (list))))))
+                     current-bar-notes)
+            ; Process any remaining consecutive quarters at end of final bar
+            (if (>= (length consecutive-quarters) 2)
+                (for-each (lambda (m) 
+                           (ly:music-set-property! m 'stemless #t)
+                           (ly:message "Marking note as stemless (final bar end)"))
+                         consecutive-quarters)))))
+    result))
 
 % Dynamic stem based on duration and bar context
 #(define (duration-stem grob)
@@ -196,7 +234,7 @@ middleLineNote = #(define-music-function (music) (ly:music?)
         (ly:stem::print grob))))
 
 % Slash function with dynamic noteheads and stems based on duration
-sl = #(define-music-function (music) (ly:music?)
+rh = #(define-music-function (music) (ly:music?)
   "Create slash notes with dynamic noteheads and stems based on duration"
   #{
     \override NoteHead.stencil = #duration-notehead
@@ -210,16 +248,6 @@ sl = #(define-music-function (music) (ly:music?)
     \revert Accidental.stencil
   #})
 
-% Rhythm function with slash styling but keeps stems
-rh = #(define-music-function (music) (ly:music?)
-  "Create rhythm notes with slash styling and stems"
-  #{
-    \override NoteHead.style = #'slash
-    \override Accidental.stencil = ##f
-    \middleLineNote #music
-    \revert NoteHead.style
-    \revert Accidental.stencil
-  #})
 
 \score {
   <<
@@ -227,14 +255,14 @@ rh = #(define-music-function (music) (ly:music?)
     \clef treble
     \time 4/4
     \key c \major
-    \sl {4. 8 4 4 | 4 4 4 4 | 4 4 8 8 8 8}
+    \rh {4. 8 4 4 | 4 4 4 4 | 4 4 8 8 8 8 |  2 2 | 1} c'4 d' e' f' g' \rh {4 4 4 4} c'4
   }
   
   \new Staff {
     \clef bass
     \time 4/4
     \key c \major
-    \rh { 4 4  2 }
+    \rh {4. 8 4 4 | 4 4 4 4 | 4 4 8 8 8 8 |  2 2 | 1} c4 d e f g \rh {4 4 4 4} c4
     g4
   }
   >>
