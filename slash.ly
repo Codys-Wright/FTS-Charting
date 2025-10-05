@@ -233,20 +233,43 @@ middleLineNote = #(define-music-function (music) (ly:music?)
           (ly:make-stencil "" '(0 . 0) '(0 . 0)))
         (ly:stem::print grob))))
 
+% Helper function to expand skips into quarter notes
+#(define (expand-skips music)
+  (music-map (lambda (m)
+              (if (music-is-of-type? m 'skip-event)
+                  (let* ((duration (ly:music-property m 'duration))
+                         (duration-log (ly:duration-log duration))
+                         (dots (ly:duration-dot-count duration)))
+                    (ly:message "Expanding skip: duration-log=~s, dots=~s" duration-log dots)
+                    ; Calculate how many quarter notes to generate
+                    (let* ((length (ly:duration-length duration))
+                           (quarter-length (ly:make-duration 2 0))
+                           (num-quarters (inexact->exact (round (/ (ly:moment-main length) 1/4)))))
+                      (ly:message "Skip length: ~s, generating ~s quarter notes" length num-quarters)
+                      (make-sequential-music
+                       (map (lambda (i)
+                             (make-music 'NoteEvent
+                                        'duration quarter-length
+                                        'pitch (ly:make-pitch 0 0 0)))
+                           (iota num-quarters)))))
+                  m))
+            music))
+
 % Slash function with dynamic noteheads and stems based on duration
 rh = #(define-music-function (music) (ly:music?)
   "Create slash notes with dynamic noteheads and stems based on duration"
-  #{
-    \override NoteHead.stencil = #duration-notehead
-    \override Stem.stencil = #duration-stem
-    \override Accidental.stencil = ##f
-    \override Stem.details.beamed-lengths = #'(3)
-    \applyMusic #analyze-quarter-notes
-    \middleLineNote #music
-    \revert NoteHead.stencil
-    \revert Stem.stencil
-    \revert Accidental.stencil
-  #})
+  (let ((expanded-music (expand-skips music)))
+    #{
+      \override NoteHead.stencil = #duration-notehead
+      \override Stem.stencil = #duration-stem
+      \override Accidental.stencil = ##f
+      \override Stem.details.beamed-lengths = #'(3)
+      \applyMusic #analyze-quarter-notes
+      \middleLineNote #expanded-music
+      \revert NoteHead.stencil
+      \revert Stem.stencil
+      \revert Accidental.stencil
+    #}))
 
 
 \score {
@@ -255,16 +278,9 @@ rh = #(define-music-function (music) (ly:music?)
     \clef treble
     \time 4/4
     \key c \major
-    \rh {4. 8 4 4 | 4 4 4 4 | 4 4 8 8 8 8 |  2 2 | 1} c'4 d' e' f' g' \rh {4 4 4 4} c'4
+    \rh {4 4 4. 8 | s1 | s1 | s1 | s1 | s1}  
   }
   
-  \new Staff {
-    \clef bass
-    \time 4/4
-    \key c \major
-    \rh {4. 8 4 4 | 4 4 4 4 | 4 4 8 8 8 8 |  2 2 | 1} c4 d e f g \rh {4 4 4 4} c4
-    g4
-  }
   >>
   \layout {
     \context {
