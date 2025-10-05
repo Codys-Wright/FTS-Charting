@@ -3,12 +3,61 @@ use lilypond::notation::note::Note;
 use lilypond::notation::pitch::{NoteName, Accidental, Octave};
 use lilypond::notation::rhythm::{Length, DurationType, Dots};
 use std::fs;
+use std::env;
 
 fn main() {
     println!("Creating a simple LilyPond file with notes...");
     
-    // Create a simple LilyPond file content
+    // Create a LilyPond file with the same structure and basic formatting
     let lilypond_content = r#"\version "2.24.0"
+
+% Set the font to Bravura for SMuFL support
+
+\include "english.ly"
+\include "../../lilypond-utils/fonts.ly"
+\include "../../lilypond-utils/chord-display.ly"
+\include "../../lilypond-utils/key-changes.ly"
+\include "../../lilypond-utils/note-placement.ly"
+\include "../../lilypond-utils/paper-setup.ly"
+\include "../../lilypond-utils/capsules/measure-position-detection.ly"
+\include "../../lilypond-utils/capsules/capsule-utils.ly"
+\include "../../lilypond-utils/capsules/new-capsule-utils.ly"
+\include "../../lilypond-utils/rehearsal-marks/rehearsal-mark-positioning.ly"
+\include "../../lilypond-utils/breaks/auto-four-measure-breaks.ly"
+\include "../../lilypond-utils/breaks/pseudo-indents.ly"
+\include "../../lilypond-utils/breaks/auto-pseudo-indents.ly"
+\include "../../lilypond-utils/layout/spacing.ly"
+\include "../../lilypond-utils/layout/score-layout.ly"
+\include "../../lilypond-utils/header-template.ly"
+\include "../../lilypond-utils/testing.ly"
+
+% Replicate the marks variable from test.ly
+marks = {
+ s1*2 |
+ \mark \markup "Intro"
+ s1*8 |
+ \mark \markup "VS 1"
+ s1*16 |
+ \mark \markup "CH 1"
+ s1*8  | 
+ \mark \markup "VS 2"
+ s1*16 |
+ \mark \markup "CH 2"
+ s1*8 |
+ \mark \markup "KEYS"
+ s1*8 |
+ \mark \markup "GTR"
+ s1*8 |
+ \mark \markup "CH 3"
+ s1*8 |
+ \mark \markup "CH 4"
+ s1*8 |
+ \mark \markup "Outro"
+ s1*6 |
+}
+
+% Global settings including key signature
+global = { \time 4/4  }
 
 \score {
   \new Staff {
@@ -16,33 +65,47 @@ fn main() {
     \time 4/4
     \key c \major
     
-    c4 d4 e4 f4 |
-    g4 a4 b4 c'4 |
-    r1 |
-    c'4 b4 a4 g4 |
-    f4 e4 d4 c4 |
+    \marks
   }
-  \layout {}
+  \layout {
+    \context {
+      \Score
+      \override RehearsalMark.self-alignment-X = #LEFT
+      \override RehearsalMark.font-size = #2
+    }
+  }
   \midi {}
 }"#;
 
-    // Write the content to a file
-    let filename = "test_output.ly";
-    fs::write(filename, lilypond_content).expect("Failed to write LilyPond file");
+    // Create output directory in target
+    let output_dir = "target/lilypond-output";
+    fs::create_dir_all(output_dir).expect("Failed to create output directory");
+    
+    // Write the content to a file in the output directory
+    let filename = format!("{}/test_output.ly", output_dir);
+    fs::write(&filename, lilypond_content).expect("Failed to write LilyPond file");
     
     println!("Created {} with content:", filename);
     println!("{}", lilypond_content);
     
     // Check if it's a valid LilyPond file
-    if is_lilypond_file(filename) {
+    if is_lilypond_file(&filename) {
         println!("\nFile is valid LilyPond format. Attempting to compile...");
         
-        // Try to compile it
-        if compile(filename) {
-            println!("✅ Successfully compiled {} to PDF!", filename);
+        // Change to output directory before compiling so PDF is created there
+        let current_dir = env::current_dir().expect("Failed to get current directory");
+        env::set_current_dir(output_dir).expect("Failed to change to output directory");
+        
+        // Try to compile it (now using just the filename since we're in the output dir)
+        let just_filename = "test_output.ly";
+        if compile(just_filename) {
+            println!("✅ Successfully compiled {} to PDF!", just_filename);
         } else {
-            println!("❌ Failed to compile {}. Make sure LilyPond is installed.", filename);
+            println!("❌ Failed to compile {}. Make sure LilyPond is installed.", just_filename);
         }
+        
+        // Change back to original directory
+        env::set_current_dir(current_dir).expect("Failed to change back to original directory");
     } else {
         println!("❌ File is not a valid LilyPond file.");
     }

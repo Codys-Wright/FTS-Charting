@@ -20,56 +20,35 @@ ekmFont = "Bravura"
 \include "utils/layout/score-layout.ly"
 
 \include "utils/header-template.ly"
+\include "utils/testing.ly"
 
-% Test the key change line start callback function
-% This will help us see which measures are at line starts
-#(define (test-key-change-callback)
-   "Test function to check line start positions for key changes"
-   (ly:message "=== TESTING KEY CHANGE LINE START CALLBACK ===")
-   (let ((test-measures '(59 67 73)))  ; The key change measures from our output
-     (for-each 
-      (lambda (measure)
-        (let ((is-line-start (key-change-line-start-callback measure)))
-          (ly:message "Measure ~a: is-line-start=~a" measure is-line-start)))
-      test-measures))
-   (ly:message "=== END TEST ==="))
+% Function to get the middle note for the current clef
+% This will be used in rhythm mode to automatically get the right note
+getMiddleNote = #(define-music-function () ()
+  "Get the middle note for the current clef (d for bass, b for treble)"
+  (let ((clef (ly:context-property (ly:context-current-moment) 'clefType)))
+    (cond
+     ((string=? clef "bass") (make-music 'NoteEvent 'pitch (ly:make-pitch 0 2 0))) ; d
+     ((string=? clef "treble") (make-music 'NoteEvent 'pitch (ly:make-pitch 0 1 0))) ; b
+     (else (make-music 'NoteEvent 'pitch (ly:make-pitch 0 2 0)))))) 
 
-% Test the new functions for handling key changes not at line starts
-#(define (test-key-change-handling)
-   "Test function to demonstrate key change handling for measures not at line starts"
-   (ly:message "=== TESTING KEY CHANGE HANDLING ===")
-   (let ((test-measures '(59 67 73)))  ; The key change measures from our output
-     (for-each 
-      (lambda (measure)
-        (let ((next-break (handle-key-change-not-at-line-start measure)))
-          (if next-break
-              (ly:message "Measure ~a: next break for coloring = ~a" measure next-break)
-              (ly:message "Measure ~a: no special handling needed" measure))))
-      test-measures))
-   
-   ;; Test the function that gets all coloring measures
-   (let ((coloring-measures (get-key-signature-coloring-measures '(59 67 73))))
-     (ly:message "All measures that need key signature coloring: ~a" coloring-measures)
-     
-     ;; Test creating override events
-     (let ((override-events (create-key-signature-override-events coloring-measures)))
-       (ly:message "Created ~a override events for key signature coloring" (length override-events))))
-   
-   (ly:message "=== END KEY CHANGE HANDLING TEST ==="))
+% Function to apply rhythm mode overrides
+applyRhythmMode = #(define-music-function () ()
+  "Apply rhythm mode overrides (slash notes, no stems, no accidentals)"
+  #{
+    \override NoteHead.style = #'slash
+    \override Stem.stencil = ##f
+    \override Accidental.stencil = ##f
+  #})
 
-% Test function to show how to use the new music functions
-#(define (test-music-functions)
-   "Test function to demonstrate the new music functions for key signature coloring"
-   (ly:message "=== TESTING MUSIC FUNCTIONS ===")
-   (ly:message "Available music functions:")
-   (ly:message "  - colorKeySignatureAtMeasure <measure-number>")
-   (ly:message "  - colorKeySignatureAtLineBegin")
-   (ly:message "  - colorKeySignatureAtLineEnd")
-   (ly:message "Example usage:")
-   (ly:message "  \\colorKeySignatureAtMeasure #75")
-   (ly:message "  \\colorKeySignatureAtLineBegin")
-   (ly:message "  \\colorKeySignatureAtLineEnd")
-   (ly:message "=== END MUSIC FUNCTIONS TEST ==="))
+% Function to revert rhythm mode overrides
+revertRhythmMode = #(define-music-function () ()
+  "Revert rhythm mode overrides back to normal notes"
+  #{
+    \revert NoteHead.style
+    \revert Stem.stencil
+    \revert Accidental.stencil
+  #})
 
 
 
@@ -135,6 +114,30 @@ testPositions = \getShortLinePositions \marks
 
 % Combined function that does both breaks and pseudo-indents in the right order
 combinedBreaks = \autoBreaksAndPseudoIndents \marks
+
+% Test unified content with mode switching
+% This demonstrates how we can mix note mode and rhythm mode in one content block
+unifiedContent = {
+  % Note mode - normal LilyPond syntax
+  g4 fs4 g4 bf4 |
+  
+  % Switch to rhythm mode
+  \applyRhythmMode
+  % In rhythm mode, we can use \getMiddleNote to get the right note for the clef
+  \getMiddleNote4 \getMiddleNote4 \getMiddleNote4 \getMiddleNote4 |
+  \revertRhythmMode
+  
+  % Back to note mode
+  g4 fs4 g4 a4 |
+  
+  % Switch to rhythm mode again
+  \applyRhythmMode
+  \getMiddleNote4 \getMiddleNote4 \getMiddleNote4 \getMiddleNote4 |
+  \revertRhythmMode
+  
+  % Final note mode
+  g4 fs4 g4 bf4 |
+}
 
 
 
@@ -697,6 +700,22 @@ melodyContent = {
       % \repeat unfold 92 { \slashMarks }
      
     >>
+  }
+  
+  % Test staff for unified content approach
+  \new Staff {
+    \clef treble
+    \time 4/4
+    \key c \major
+    
+    % Test the unified content approach
+    \unifiedContent
+    
+    \break
+    
+    % Test with bass clef to see different middle note
+    \clef bass
+    \unifiedContent
   }
   >>
 }
