@@ -51,7 +51,29 @@ middleLineNote = #(define-music-function (music) (ly:music?)
     #music
   #})
 
+% Slash function with no stems
+sl = #(define-music-function (music) (ly:music?)
+  "Create slash notes with no stems"
+  #{
+    \override NoteHead.style = #'slash
+    \override Stem.stencil = ##f
+    \override Accidental.stencil = ##f
+    \middleLineNote #music
+    \revert NoteHead.style
+    \revert Stem.stencil
+    \revert Accidental.stencil
+  #})
 
+% Rhythm function with slash styling but keeps stems
+rh = #(define-music-function (music) (ly:music?)
+  "Create rhythm notes with slash styling and stems"
+  #{
+    \override NoteHead.style = #'slash
+    \override Accidental.stencil = ##f
+    \middleLineNote #music
+    \revert NoteHead.style
+    \revert Accidental.stencil
+  #})
 
 \score {
   <<
@@ -59,14 +81,15 @@ middleLineNote = #(define-music-function (music) (ly:music?)
     \clef treble
     \time 4/4
     \key c \major
-    \middleLineNote { 4 4.~ 2}
+    \sl { 4. s8 2.}
   }
   
   \new Staff {
     \clef bass
     \time 4/4
     \key c \major
-    \middleLineNote { 4 2 4 } 
+    \rh { 4 4 4 4 }
+    g4
   }
   >>
 }
